@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to Add User Management to Vehicles Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 20px;
+            line-height: 1.6;
+        }
+        h1, h2 {
+            color: #4CAF50;
+        }
+        .method {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+        }
+        .method h2 {
+            margin-top: 0;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 5px;
+        }
+        code {
+            display: block;
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .note {
+            background-color: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 10px;
+            margin: 15px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>How to Add User Management to Vehicles Page</h1>
+    <p>This guide explains how to add the User Management functionality to the vehicles page without modifying the original files.</p>
+    
+    <div class="method">
+        <h2>Method 1: Using a Script Tag</h2>
+        <p>This is the simplest method, but requires adding one line to your HTML file:</p>
+        <ol>
+            <li>Download the <a href="add-user-management.js" download>add-user-management.js</a> file</li>
+            <li>Place it in the same directory as your vehicles.html file</li>
+            <li>Add the following script tag at the end of vehicles.html, right before the closing &lt;/body&gt; tag:</li>
+        </ol>
+        <code>&lt;script src="add-user-management.js"&gt;&lt;/script&gt;</code>
+        <p>This will automatically add the User Management link to the navigation bar and implement all the necessary functions.</p>
+    </div>
+    
+    <div class="method">
+        <h2>Method 2: Using the Browser Console</h2>
+        <p>If you don't want to modify any files at all, you can use this method:</p>
+        <ol>
+            <li>Open vehicles.html in your browser</li>
+            <li>Open the browser console (F12 or right-click > Inspect > Console)</li>
+            <li>Copy and paste the entire content of the <a href="add-user-management.js" target="_blank">add-user-management.js</a> file into the console</li>
+            <li>Press Enter to execute the code</li>
+        </ol>
+        <p>The User Management link will immediately appear in the navigation bar. Note that you'll need to repeat this process each time you refresh the page.</p>
+    </div>
+    
+    <div class="method">
+        <h2>Method 3: Create a Browser Bookmark</h2>
+        <p>For a more permanent solution without modifying files:</p>
+        <ol>
+            <li>Create a new bookmark in your browser</li>
+            <li>Set the name to "Add User Management"</li>
+            <li>Copy the code below and paste it as the URL/location of the bookmark:</li>
+        </ol>
+        <code>javascript:(function(){var s=document.createElement('script');s.src='https://raw.githubusercontent.com/yourusername/yourrepo/main/add-user-management.js';document.body.appendChild(s);})();</code>
+        <p>Note: You'll need to host the script file online or replace the URL with the actual code (minified).</p>
+        <p>Then when viewing vehicles.html, just click the bookmark to activate User Management.</p>
+    </div>
+    
+    <div class="note">
+        <p><strong>Important:</strong> The User Management functionality relies on existing HTML elements in vehicles.html, including:</p>
+        <ul>
+            <li>The <code>userManagementModal</code> with proper form fields</li>
+            <li>The <code>user-actions</code> div for navigation links</li>
+        </ul>
+        <p>This solution works without modifying the original app because these elements already exist in the HTML but were not functional because the JavaScript functions were missing.</p>
+    </div>
+    
+    <h2>User Management Features</h2>
+    <p>This solution provides the following functionality:</p>
+    <ul>
+        <li>Add new users with optional admin privileges</li>
+        <li>View a list of all users</li>
+        <li>Reset user passwords</li>
+        <li>Delete users (except for the admin user)</li>
+        <li>Change the current user's password</li>
+    </ul>
+    
+    <p>All user data is stored in the browser's localStorage, just like the original application.</p>
+</body>
+</html> 

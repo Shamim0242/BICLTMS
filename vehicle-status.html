@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Status</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Add field manager script first so it runs before other scripts -->
+    <script src="assets/js/fieldManager.js"></script>
+    <!-- Add navigation spacing fix -->
+    <script src="assets/js/navSpacingFix.js"></script>
+    <!-- Add theme manager to navigation -->
+    <script src="assets/js/navThemeManager.js"></script>
+    <!-- Add trips link to navigation -->
+    <script>
+        // Update welcome text with actual username
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            const welcomeText = document.getElementById('welcome-text');
+            if (currentUser && welcomeText) {
+                welcomeText.textContent = `Welcome ${currentUser.username}`;
+            }
+        });
+    </script>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #388e3c;
+            --text-color: #333;
+            --background-color: #f9f9f9;
+            --table-header-bg: #e8f5e9;
+            --table-border: #ddd;
+            --form-bg: rgba(255, 255, 255, 0.95);
+            --input-border: #ccc;
+            --box-shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        /* Dark theme variables */
+        .dark-theme {
+            --primary-color: #43a047;
+            --secondary-color: #2e7d32;
+            --text-color: #f1f1f1;
+            --background-color: #121212;
+            --table-header-bg: #1e3b1e;
+            --table-border: #444;
+            --form-bg: rgba(48, 48, 48, 0.95);
+            --input-border: #555;
+            --box-shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Dark Mode Styles */
+        body.dark-mode {
+            background-color: #202124;
+            color: #e8eaed;
+        }
+
+        /* User Info Styles */
+        .user-info {
+            text-align: right;
+            margin-bottom: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .user-info span {
+            font-weight: bold;
+        }
+
+        .user-actions a {
+            color: #666666;
+            text-decoration: none;
+            margin-left: 10px;
+        }
+
+        /* Navigation Bar Styles */
+        .nav-container {
+            margin-bottom: 20px;
+        }
+
+        .navigation-bar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .nav-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 16px;
+            background-color: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            flex: 1;
+            text-align: center;
+            margin: 5px;
+            border: 1px solid transparent;
+        }
+        
+        .nav-button i {
+            margin-right: 8px;
+            font-size: 16px;
+        }
+        
+        .nav-button:hover {
+            background-color: #5a6268;
+        }
+        
+        .nav-button.active {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Dark mode styles for navigation */
+        body.dark-mode .nav-container {
+            background-color: #292a2d;
+        }
+        
+        body.dark-mode .nav-button {
+            color: #e8eaed;
+        }
+        
+        body.dark-mode .nav-button:hover {
+            background-color: rgba(76, 175, 80, 0.15);
+        }
+        
+        /* Responsive navigation for mobile devices */
+        @media (max-width: 768px) {
+            .navigation-bar {
+                flex-direction: column;
+            }
+            
+            .nav-button {
+                width: 100%;
+                margin: 3px 0;
+            }
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0;
+        }
+
+        .page-title {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--text-color);
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        /* Table Container */
+        .table-container {
+            background-color: var(--form-bg);
+            border-radius: 8px;
+            box-shadow: 0 0 10px var(--box-shadow);
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .table-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-header h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        /* Table Styles */
+        .vehicle-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0;
+        }
+
+        .vehicle-table th {
+            background-color: var(--table-header-bg);
+            color: var(--text-color);
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: bold;
+            border-bottom: 1px solid var(--table-border);
+        }
+
+        .vehicle-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--table-border);
+            vertical-align: middle;
+        }
+
+        .vehicle-table tr:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .dark-theme .vehicle-table tr:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        body.dark-mode .table-container {
+            background-color: #292a2d;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+
+        body.dark-mode .row-controls {
+            background-color: #35363a;
+        }
+
+        body.dark-mode .row-selector select {
+            background-color: #3c3c3f;
+            border-color: #5f6368;
+            color: #e8eaed;
+        }
+
+        body.dark-mode .row-selector label {
+            color: #e8eaed;
+        }
+
+        body.dark-mode .user-info,
+        body.dark-mode label {
+            color: #e8eaed;
+        }
+
+        body.dark-mode .user-actions a {
+            color: var(--primary-color);
+        }
+
+        body.dark-mode .table-header {
+            background-color: var(--primary-color);
+        }
+
+        body.dark-mode .vehicle-table th {
+            background-color: var(--table-header-bg);
+        }
+
+        body.dark-mode .vehicle-table td {
+            border-bottom-color: #3c3c3f;
+        }
+
+        body.dark-mode .page-title {
+            color: #e8eaed;
+        }
+
+        .vehicle-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Row Control Styles */
+        .row-controls {
+            background-color: #f8f9fa;
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--table-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .row-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .row-selector label {
+            color: var(--text-color);
+        }
+
+        .row-selector select {
+            padding: 0.5rem;
+            border: 1px solid var(--table-border);
+            border-radius: 4px;
+            background-color: white;
+            font-size: 0.9rem;
+        }
+
+        .show-more-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .show-more-btn:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .show-more-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 0 1rem;
+            }
+
+            .vehicle-table {
+                font-size: 0.9rem;
+            }
+
+            .vehicle-table th,
+            .vehicle-table td {
+                padding: 0.5rem;
+            }
+
+            .row-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .navigation-bar {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .table-header h3 {
+                font-size: 1.1rem;
+            }
+
+            .user-info {
+                text-align: center;
+            }
+
+            .user-actions {
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- User info -->
+    <div class="user-info">
+        <div class="user-actions">
+            <span id="welcome-text" style="font-weight: bold; margin-right: 15px;">Welcome to Admin</span>
+            <a href="#" onclick="showUserManagement()">User Management</a>
+            <a href="#" onclick="showThemeManager()">Theme</a>
+            <a href="login.html">Logout</a>
+        </div>
+    </div>
+    
+    <!-- Navigation Bar -->
+    <div class="nav-container">
+        <div class="navigation-bar" style="justify-content: flex-end;">
+            <a href="Dashboard.html" class="nav-button" style="flex: 0 0 auto;">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a href="vehicles.html" class="nav-button" style="flex: 0 0 auto;">
+                <i class="fas fa-truck"></i> Vehicles
+            </a>
+            <a href="Driver information.html" class="nav-button" style="flex: 0 0 auto;">
+                <i class="fas fa-id-card"></i> Driver Information
+            </a>
+            <a href="vehicle-status.html" class="nav-button active" style="flex: 0 0 auto;">
+                <i class="fas fa-chart-line"></i> Vehicle Status
+            </a>
+            <a href="Documents.html" class="nav-button" style="flex: 0 0 auto;">
+                <i class="fas fa-file-alt"></i> Documents
+            </a>
+            <a href="Trips.html" class="nav-button" style="flex: 0 0 auto;">
+                <i class="fas fa-route"></i> Trips
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <h1 class="page-title">Vehicle Status</h1>
+
+        <!-- Out Vehicle List Table -->
+        <div class="table-container">
+            <div class="table-header">
+                <h3><i class="fas fa-truck"></i> Out Vehicle List</h3>
+            </div>
+            <table class="vehicle-table" id="out-vehicle-table">
+                <thead>
+                    <tr>
+                        <th>Truck</th>
+                        <th>Driver</th>
+                        <th>Party Name</th>
+                        <th>Destination</th>
+                        <th>Capacity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>TR-001</td>
+                        <td>John Smith</td>
+                        <td>ABC Logistics</td>
+                        <td>Dhaka</td>
+                        <td>15 Tons</td>
+                    </tr>
+                    <tr>
+                        <td>TR-002</td>
+                        <td>Mike Johnson</td>
+                        <td>XYZ Transport</td>
+                        <td>Chittagong</td>
+                        <td>20 Tons</td>
+                    </tr>
+                    <tr>
+                        <td>TR-003</td>
+                        <td>David Wilson</td>
+                        <td>Fast Cargo</td>
+                        <td>Sylhet</td>
+                        <td>12 Tons</td>
+                    </tr>
+                    <tr>
+                        <td>TR-004</td>
+                        <td>Robert Brown</td>
+                        <td>Express Delivery</td>
+                        <td>Rajshahi</td>
+                        <td>18 Tons</td>
+                    </tr>
+                    <tr>
+                        <td>TR-005</td>
+                        <td>James Davis</td>
+                        <td>Quick Ship</td>
+                        <td>Khulna</td>
+                        <td>16 Tons</td>
+                    </tr>
+                    <tr class="hidden-row">
+                        <td>TR-006</td>
+                        <td>Thomas Miller</td>
+                        <td>Global Freight</td>
+                        <td>Barisal</td>
+                        <td>14 Tons</td>
+                    </tr>
+                    <tr class="hidden-row">
+                        <td>TR-007</td>
+                        <td>Christopher Garcia</td>
+                        <td>Speed Cargo</td>
+                        <td>Rangpur</td>
+                        <td>17 Tons</td>
+                    </tr>
+                    <tr class="hidden-row">
+                        <td>TR-008</td>
+                        <td>Daniel Martinez</td>
+                        <td>Reliable Transport</td>
+                        <td>Mymensingh</td>
+                        <td>13 Tons</td>
+                    </tr>
+                    <tr class="hidden-row">
+                        <td>TR-009</td>
+                        <td>Matthew Rodriguez</td>
+                        <td>Swift Logistics</td>
+                        <td>Comilla</td>
+                        <td>19 Tons</td>
+                    </tr>
+                    <tr class="hidden-row">
+                        <td>TR-010</td>
+                        <td>Anthony Lewis</td>
+                        <td>Premium Cargo</td>
+                        <td>Noakhali</td>
+                        <td>15 Tons</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="row-controls">
+                <div class="row-selector">
+                    <label for="out-vehicle-rows">Show:</label>
+                    <select id="out-vehicle-rows" onchange="changeRowDisplay('out-vehicle-table', this.value)">
+                        <option value="5">5 rows</option>
+                        <option value="10">10 rows</option>
+                        <option value="all">All rows</option>
+                    </select>
+                </div>
+                <button class="show-more-btn" onclick="toggleShowMore('out-vehicle-table')" id="out-vehicle-btn">
+                    Show More
+                </button>
+            </div>
+        </div>
+
+        <!-- Wait for Out Table -->
+        <div class="table-container">
+            <div class="table-header">
+                <h3><i class="fas fa-clock"></i> Wait for Out</h3>
+            </div>
+            <table class="vehicle-table" id="wait-out-table">
+                <thead>
+                    <tr>
+                        <th>Truck</th>
+                        <th>Driver</th>
+                        <th>Party Name</th>
+                        <th>Destination</th>
+                        <th>Capacity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>TR-011</td>
+                        <td>Kevin Lee</td>
+                        <td>Global Freight</td>
+                        <td>Barisal</td>
+                        <td>16 Tons</td>
+                    </tr>
+                    <tr>
+                        <td>TR-012</td>
+                        <td>Brian Taylor</td>
+                        <td>Speed Cargo</td>
+                        <td>Rangpur</td>
+                        <td>14 Tons</td>
+                    </tr>
+                    <tr>
+                        <td>TR-013</td>
+                        <td>Steven Anderson</td>
+                        <td>Reliable Transport</td>
+                        <td>Mymensingh</td>
+                        <td>18 Tons</td>
+                    </tr>
+                    <tr>
+                        <td>TR-014</td>
+                        <td>Timothy White</td>
+                        <td>Swift Logistics</td>
+                        <td>Comilla</td>
+                        <td>15 Tons</td>
+                    </tr>
+                    <tr>
+                        <td>TR-015</td>
+                        <td>Jason Jackson</td>
+                        <td>Premium Cargo</td>
+                        <td>Noakhali</td>
+                        <td>17 Tons</td>
+                    </tr>
+                    <tr class="hidden-row">
+                        <td>TR-016</td>
+                        <td>Jeffrey Moore</td>
+                        <td>Express Cargo</td>
+                        <td>Dhaka</td>
+                        <td>20 Tons</td>
+                    </tr>
+                    <tr class="hidden-row">
+                        <td>TR-017</td>
+                        <td>Ryan Thompson</td>
+                        <td>Fast Delivery</td>
+                        <td>Chittagong</td>
+                        <td>13 Tons</td>
+                    </tr>
+                    <tr class="hidden-row">
+                        <td>TR-018</td>
+                        <td>Gary Martin</td>
+                        <td>Quick Transport</td>
+                        <td>Sylhet</td>
+                        <td>19 Tons</td>
+                    </tr>
+                    <tr class="hidden-row">
+                        <td>TR-019</td>
+                        <td>Nicholas Lee</td>
+                        <td>Reliable Cargo</td>
+                        <td>Rajshahi</td>
+                        <td>15 Tons</td>
+                    </tr>
+                    <tr class="hidden-row">
+                        <td>TR-020</td>
+                        <td>Eric Clark</td>
+                        <td>Premium Transport</td>
+                        <td>Khulna</td>
+                        <td>18 Tons</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="row-controls">
+                <div class="row-selector">
+                    <label for="wait-out-rows">Show:</label>
+                    <select id="wait-out-rows" onchange="changeRowDisplay('wait-out-table', this.value)">
+                        <option value="5">5 rows</option>
+                        <option value="10">10 rows</option>
+                        <option value="all">All rows</option>
+                    </select>
+                </div>
+                <button class="show-more-btn" onclick="toggleShowMore('wait-out-table')" id="wait-out-btn">
+                    Show More
+                </button>
+            </div>
+        </div>
+
+        <!-- IN Vehicle List Table -->
+        <div class="table-container">
+            <div class="table-header">
+                <h3><i class="fas fa-home"></i> IN Vehicle List</h3>
+            </div>
+            <table class="vehicle-table" id="in-vehicle-table">
+                <thead>
+                    <tr>
+                        <th>Truck</th>
+                        <th>Driver</th>
+                        <th>In Date & Time</th>
+                        <th>Last Trip</th>
+                        <th>Capacity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>TR-021</td>
+                        <td>Kevin Lee</td>
+                        <td>2025-01-15 14:30</td>
+                        <td>Dhaka → Chittagong</td>
+                        <td>16 Tons</td>
+                    </tr>
+                    <tr>
+                        <td>TR-022</td>
+                        <td>Brian Taylor</td>
+                        <td>2025-01-15 16:45</td>
+                        <td>Sylhet → Dhaka</td>
+                        <td>14 Tons</td>
+                    </tr>
+                    <tr>
+                        <td>TR-023</td>
+                        <td>Steven Anderson</td>
+                        <td>2025-01-15 18:20</td>
+                        <td>Rajshahi → Dhaka</td>
+                        <td>18 Tons</td>
+                    </tr>
+                    <tr>
+                        <td>TR-024</td>
+                        <td>Timothy White</td>
+                        <td>2025-01-15 19:15</td>
+                        <td>Khulna → Dhaka</td>
+                        <td>15 Tons</td>
+                    </tr>
+                    <tr>
+                        <td>TR-025</td>
+                        <td>Jason Jackson</td>
+                        <td>2025-01-15 20:00</td>
+                        <td>Barisal → Dhaka</td>
+                        <td>17 Tons</td>
+                    </tr>
+                    <tr class="hidden-row">
+                        <td>TR-026</td>
+                        <td>Jeffrey Moore</td>
+                        <td>2025-01-15 21:30</td>
+                        <td>Rangpur → Dhaka</td>
+                        <td>16 Tons</td>
+                    </tr>
+                    <tr class="hidden-row">
+                        <td>TR-027</td>
+                        <td>Ryan Thompson</td>
+                        <td>2025-01-15 22:15</td>
+                        <td>Mymensingh → Dhaka</td>
+                        <td>13 Tons</td>
+                    </tr>
+                    <tr class="hidden-row">
+                        <td>TR-028</td>
+                        <td>Gary Martin</td>
+                        <td>2025-01-15 23:00</td>
+                        <td>Comilla → Dhaka</td>
+                        <td>19 Tons</td>
+                    </tr>
+                    <tr class="hidden-row">
+                        <td>TR-029</td>
+                        <td>Nicholas Lee</td>
+                        <td>2025-01-16 00:30</td>
+                        <td>Noakhali → Dhaka</td>
+                        <td>15 Tons</td>
+                    </tr>
+                    <tr class="hidden-row">
+                        <td>TR-030</td>
+                        <td>Eric Clark</td>
+                        <td>2025-01-16 01:15</td>
+                        <td>Dhaka → Chittagong</td>
+                        <td>18 Tons</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="row-controls">
+                <div class="row-selector">
+                    <label for="in-vehicle-rows">Show:</label>
+                    <select id="in-vehicle-rows" onchange="changeRowDisplay('in-vehicle-table', this.value)">
+                        <option value="5">5 rows</option>
+                        <option value="10">10 rows</option>
+                        <option value="all">All rows</option>
+                    </select>
+                </div>
+                <button class="show-more-btn" onclick="toggleShowMore('in-vehicle-table')" id="in-vehicle-btn">
+                    Show More
+                </button>
+            </div>
+        </div>
+
+        <!-- Workshop Vehicles Table -->
+        <div class="table-container">
+            <div class="table-header">
+                <h3><i class="fas fa-tools"></i> Workshop Vehicles</h3>
+            </div>
+            <table class="vehicle-table" id="workshop-table">
+                <thead>
+                    <tr>
+                        <th>Truck</th>
+                        <th>Driver</th>
+                        <th>In Date & Time</th>
+                        <th>Last Trip</th>
+                        <th>Capacity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>TR-031</td>
+                        <td>Jeffrey Moore</td>
+                        <td>2025-01-14 09:00</td>
+                        <td>Rangpur → Dhaka</td>
+                        <td>16 Tons</td>
+                    </tr>
+                    <tr>
+                        <td>TR-032</td>
+                        <td>Ryan Thompson</td>
+                        <td>2025-01-14 11:30</td>
+                        <td>Mymensingh → Dhaka</td>
+                        <td>13 Tons</td>
+                    </tr>
+                    <tr>
+                        <td>TR-033</td>
+                        <td>Gary Martin</td>
+                        <td>2025-01-14 14:15</td>
+                        <td>Comilla → Dhaka</td>
+                        <td>19 Tons</td>
+                    </tr>
+                    <tr>
+                        <td>TR-034</td>
+                        <td>Nicholas Lee</td>
+                        <td>2025-01-14 16:45</td>
+                        <td>Noakhali → Dhaka</td>
+                        <td>15 Tons</td>
+                    </tr>
+                    <tr>
+                        <td>TR-035</td>
+                        <td>Eric Clark</td>
+                        <td>2025-01-14 18:30</td>
+                        <td>Dhaka → Chittagong</td>
+                        <td>18 Tons</td>
+                    </tr>
+                    <tr class="hidden-row">
+                        <td>TR-036</td>
+                        <td>John Smith</td>
+                        <td>2025-01-14 20:00</td>
+                        <td>Dhaka → Sylhet</td>
+                        <td>15 Tons</td>
+                    </tr>
+                    <tr class="hidden-row">
+                        <td>TR-037</td>
+                        <td>Mike Johnson</td>
+                        <td>2025-01-14 21:30</td>
+                        <td>Chittagong → Dhaka</td>
+                        <td>20 Tons</td>
+                    </tr>
+                    <tr class="hidden-row">
+                        <td>TR-038</td>
+                        <td>David Wilson</td>
+                        <td>2025-01-14 22:15</td>
+                        <td>Sylhet → Dhaka</td>
+                        <td>12 Tons</td>
+                    </tr>
+                    <tr class="hidden-row">
+                        <td>TR-039</td>
+                        <td>Robert Brown</td>
+                        <td>2025-01-14 23:00</td>
+                        <td>Rajshahi → Dhaka</td>
+                        <td>18 Tons</td>
+                    </tr>
+                    <tr class="hidden-row">
+                        <td>TR-040</td>
+                        <td>James Davis</td>
+                        <td>2025-01-15 00:30</td>
+                        <td>Khulna → Dhaka</td>
+                        <td>16 Tons</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="row-controls">
+                <div class="row-selector">
+                    <label for="workshop-rows">Show:</label>
+                    <select id="workshop-rows" onchange="changeRowDisplay('workshop-table', this.value)">
+                        <option value="5">5 rows</option>
+                        <option value="10">10 rows</option>
+                        <option value="all">All rows</option>
+                    </select>
+                </div>
+                <button class="show-more-btn" onclick="toggleShowMore('workshop-table')" id="workshop-btn">
+                    Show More
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Initialize all tables to show only 5 rows by default
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Vehicle Status page loaded successfully');
+            
+            // Initialize all tables to show 5 rows
+            const tables = ['out-vehicle-table', 'wait-out-table', 'in-vehicle-table', 'workshop-table'];
+            tables.forEach(tableId => {
+                changeRowDisplay(tableId, '5');
+            });
+        });
+
+        // Function to change row display based on selector
+        function changeRowDisplay(tableId, rowCount) {
+            const table = document.getElementById(tableId);
+            const hiddenRows = table.querySelectorAll('.hidden-row');
+            const btn = document.getElementById(tableId.replace('-table', '-btn'));
+            
+            if (rowCount === 'all') {
+                hiddenRows.forEach(row => {
+                    row.style.display = 'table-row';
+                });
+                btn.textContent = 'Show Less';
+                btn.onclick = () => toggleShowMore(tableId);
+            } else {
+                const count = parseInt(rowCount);
+                hiddenRows.forEach((row, index) => {
+                    if (index < count - 5) {
+                        row.style.display = 'table-row';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+                
+                // Update button text and functionality
+                if (count === 10) {
+                    btn.textContent = 'Show More';
+                    btn.onclick = () => changeRowDisplay(tableId, 'all');
+                } else {
+                    btn.textContent = 'Show More';
+                    btn.onclick = () => changeRowDisplay(tableId, '10');
+                }
+            }
+        }
+
+        // Function to toggle show more/less
+        function toggleShowMore(tableId) {
+            const table = document.getElementById(tableId);
+            const hiddenRows = table.querySelectorAll('.hidden-row');
+            const btn = document.getElementById(tableId.replace('-table', '-btn'));
+            const selector = document.getElementById(tableId.replace('-table', '-rows'));
+            
+            const hasHiddenRows = Array.from(hiddenRows).some(row => row.style.display === 'none');
+            
+            if (hasHiddenRows) {
+                // Show all rows
+                hiddenRows.forEach(row => {
+                    row.style.display = 'table-row';
+                });
+                btn.textContent = 'Show Less';
+                selector.value = 'all';
+            } else {
+                // Show only 5 rows
+                hiddenRows.forEach(row => {
+                    row.style.display = 'none';
+                });
+                btn.textContent = 'Show More';
+                selector.value = '5';
+            }
+        }
+    </script>
+</body>
+</html>

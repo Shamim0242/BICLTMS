@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Transport Management</title>
+    <script src="assets/js/fieldManager.js"></script>
+    <script src="assets/js/navSpacingFix.js"></script>
+    <script src="assets/js/navThemeManager.js"></script>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #388e3c;
+            --text-color: #333;
+            --background-color: #f9f9f9;
+            --table-header-bg: #e8f5e9;
+            --table-border: #ddd;
+            --form-bg: rgba(255, 255, 255, 0.95);
+            --box-shadow: rgba(0, 0, 0, 0.1);
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+        
+        .user-info {
+            text-align: right;
+            margin-bottom: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .user-actions a {
+            color: #666666;
+            text-decoration: none;
+            margin-left: 10px;
+        }
+        
+        .nav-container {
+            margin-bottom: 20px;
+        }
+        
+        .navigation-bar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            padding: 10px;
+        }
+        
+        .nav-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 16px;
+            background-color: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            flex: 1;
+            text-align: center;
+            margin: 5px;
+            border: 1px solid transparent;
+        }
+        
+        .nav-button i {
+            margin-right: 8px;
+            font-size: 16px;
+        }
+        
+        .nav-button:hover {
+            background-color: #5a6268;
+        }
+        
+        .nav-button.active {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Dark mode styles for navigation */
+        body.dark-mode .nav-container {
+            background-color: #292a2d;
+        }
+        
+        body.dark-mode .nav-button {
+            color: #e8eaed;
+        }
+        
+        body.dark-mode .nav-button:hover {
+            background-color: rgba(76, 175, 80, 0.15);
+        }
+        
+        /* Responsive navigation for mobile devices */
+        @media (max-width: 768px) {
+            .navigation-bar {
+                flex-direction: column;
+            }
+            
+            .nav-button {
+                width: 100%;
+                margin: 3px 0;
+            }
+        }
+        
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: var(--form-bg);
+            border-radius: 8px;
+            box-shadow: 0 0 10px var(--box-shadow);
+        }
+        
+        .dashboard-header h1 {
+            margin: 0;
+            color: var(--primary-color);
+            font-size: 2.5em;
+        }
+        
+        .report-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .report-section {
+            background-color: var(--form-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px var(--box-shadow);
+        }
+        
+        .report-section h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            font-size: 1.4em;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+        
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        
+        .report-table th,
+        .report-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--table-border);
+        }
+        
+        .report-table th {
+            background-color: var(--table-header-bg);
+            font-weight: 600;
+            color: var(--text-color);
+        }
+        
+        .total-row {
+            background-color: var(--primary-color) !important;
+            color: white !important;
+            font-weight: bold;
+        }
+        
+        .status-active { color: #28a745; font-weight: bold; }
+        .status-idle { color: #ffc107; font-weight: bold; }
+        .status-scrapped { color: #dc3545; font-weight: bold; }
+        .expired { color: #dc3545; font-weight: bold; }
+        .expiring-soon { color: #fd7e14; font-weight: bold; }
+        
+        @media (max-width: 1200px) {
+            .report-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="user-info">
+        <div class="user-actions">
+            <span id="welcome-text" style="font-weight: bold; margin-right: 15px;">Welcome to Admin</span>
+            <a href="#" onclick="showUserManagement()">User Management</a>
+            <a href="#" onclick="showThemeManager()">Theme</a>
+            <a href="login.html">Logout</a>
+        </div>
+    </div>
+    
+    <div class="nav-container">
+        <div class="navigation-bar" style="justify-content: flex-end;">
+            <a href="Dashboard.html" class="nav-button active" style="flex: 0 0 auto;">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a href="vehicles.html" class="nav-button" style="flex: 0 0 auto;">
+                <i class="fas fa-truck"></i> Vehicles
+            </a>
+            <a href="Driver information.html" class="nav-button" style="flex: 0 0 auto;">
+                <i class="fas fa-id-card"></i> Driver Information
+            </a>
+            <a href="vehicle-status.html" class="nav-button" style="flex: 0 0 auto;">
+                <i class="fas fa-chart-line"></i> Vehicle Status
+            </a>
+            <a href="Documents.html" class="nav-button" style="flex: 0 0 auto;">
+                <i class="fas fa-file-alt"></i> Documents
+            </a>
+            <a href="Trips.html" class="nav-button" style="flex: 0 0 auto;">
+                <i class="fas fa-route"></i> Trips
+            </a>
+        </div>
+    </div>
+
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
+            <p>Transport Management System - Summary Reports</p>
+        </div>
+
+        <div class="report-grid">
+            <!-- Report Table 1 - Vehicle Report -->
+            <div class="report-section">
+                <h2><i class="fas fa-truck"></i> Vehicle Report</h2>
+                
+                <h3>Vehicles by Capacity</h3>
+                <table class="report-table" id="capacityTable">
+                    <thead>
+                        <tr><th>Capacity</th><th>Quantity</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td><strong>Total</strong></td>
+                            <td id="totalCapacityVehicles">0</td>
+                        </tr>
+                    </tfoot>
+                </table>
+                
+                <h3>Vehicles by Status</h3>
+                <table class="report-table" id="statusTable">
+                    <thead>
+                        <tr><th>Status</th><th>Quantity</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td><strong>Total</strong></td>
+                            <td id="totalStatusVehicles">0</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- Report Table 2 - Driver Information Report -->
+            <div class="report-section">
+                <h2><i class="fas fa-id-card"></i> Driver Information Report</h2>
+                
+                <h3>Drivers by License Type</h3>
+                <table class="report-table" id="licenseTable">
+                    <thead>
+                        <tr><th>License Type</th><th>Number of Drivers</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td><strong>Total</strong></td>
+                            <td id="totalDriversCount">0</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- Report Table 3 - Vehicle Status Report -->
+            <div class="report-section">
+                <h2><i class="fas fa-chart-line"></i> Vehicle Status Report</h2>
+                
+                <table class="report-table" id="vehicleStatusTable">
+                    <thead>
+                        <tr><th>Status</th><th>Count</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td><strong>Total</strong></td>
+                            <td id="totalVehicleStatus">0</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- Report Table 4 - Document Expiry Report -->
+            <div class="report-section">
+                <h2><i class="fas fa-file-alt"></i> Document Expiry Report</h2>
+                
+                <h3>Expired Documents</h3>
+                <table class="report-table" id="expiredTable">
+                    <thead>
+                        <tr><th>Document Type</th><th>Count</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td><strong>Total Expired</strong></td>
+                            <td id="totalExpired">0</td>
+                        </tr>
+                    </tfoot>
+                </table>
+                
+                <h3>Upcoming Expiries (1-30 days)</h3>
+                <table class="report-table" id="expiringTable">
+                    <thead>
+                        <tr><th>Document Type</th><th>Count</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td><strong>Total Expiring Soon</strong></td>
+                            <td id="totalExpiringSoon">0</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            const welcomeText = document.getElementById('welcome-text');
+            if (currentUser && welcomeText) {
+                welcomeText.textContent = `Welcome ${currentUser.username}`;
+            }
+            loadDashboardData();
+        });
+        
+        function loadDashboardData() {
+            loadVehicleData();
+            loadDriverData();
+            loadVehicleStatusData();
+            loadDocumentData();
+        }
+        
+        function loadVehicleData() {
+            const vehicles = JSON.parse(localStorage.getItem('vehicles')) || [];
+            
+            // Group by capacity
+            const capacityGroups = {};
+            vehicles.forEach(vehicle => {
+                const capacity = vehicle.capacity || 'Unknown';
+                capacityGroups[capacity] = (capacityGroups[capacity] || 0) + 1;
+            });
+            
+            const capacityTable = document.getElementById('capacityTable').getElementsByTagName('tbody')[0];
+            capacityTable.innerHTML = '';
+            Object.entries(capacityGroups).forEach(([capacity, count]) => {
+                const row = capacityTable.insertRow();
+                row.innerHTML = `<td>${capacity}</td><td>${count}</td>`;
+            });
+            document.getElementById('totalCapacityVehicles').textContent = vehicles.length;
+            
+            // Group by status
+            const statusGroups = { 'Active': 0, 'Idle': 0, 'Scrapped': 0 };
+            vehicles.forEach(vehicle => {
+                const status = vehicle.status || 'Idle';
+                if (statusGroups.hasOwnProperty(status)) {
+                    statusGroups[status]++;
+                } else {
+                    statusGroups['Idle']++;
+                }
+            });
+            
+            const statusTable = document.getElementById('statusTable').getElementsByTagName('tbody')[0];
+            statusTable.innerHTML = '';
+            Object.entries(statusGroups).forEach(([status, count]) => {
+                const row = statusTable.insertRow();
+                const statusClass = status === 'Active' ? 'status-active' : 
+                                  status === 'Idle' ? 'status-idle' : 'status-scrapped';
+                row.innerHTML = `<td class="${statusClass}">${status}</td><td>${count}</td>`;
+            });
+            document.getElementById('totalStatusVehicles').textContent = vehicles.length;
+        }
+        
+        function loadDriverData() {
+            const drivers = JSON.parse(localStorage.getItem('drivers')) || [];
+            
+            const licenseGroups = {};
+            drivers.forEach(driver => {
+                const licenseType = driver.licenseType || 'Unknown';
+                licenseGroups[licenseType] = (licenseGroups[licenseType] || 0) + 1;
+            });
+            
+            const licenseTable = document.getElementById('licenseTable').getElementsByTagName('tbody')[0];
+            licenseTable.innerHTML = '';
+            Object.entries(licenseGroups).forEach(([licenseType, count]) => {
+                const row = licenseTable.insertRow();
+                row.innerHTML = `<td>${licenseType}</td><td>${count}</td>`;
+            });
+            document.getElementById('totalDriversCount').textContent = drivers.length;
+        }
+        
+        function loadVehicleStatusData() {
+            const vehicleStatuses = JSON.parse(localStorage.getItem('vehicleStatuses')) || [];
+            
+            const statusCounts = { 'Out': 0, 'Waiting for Out': 0, 'In': 0, 'Workshop': 0 };
+            vehicleStatuses.forEach(status => {
+                const currentStatus = status.currentStatus || 'In';
+                if (statusCounts.hasOwnProperty(currentStatus)) {
+                    statusCounts[currentStatus]++;
+                } else {
+                    statusCounts['In']++;
+                }
+            });
+            
+            const statusTable = document.getElementById('vehicleStatusTable').getElementsByTagName('tbody')[0];
+            statusTable.innerHTML = '';
+            Object.entries(statusCounts).forEach(([status, count]) => {
+                const row = statusTable.insertRow();
+                row.innerHTML = `<td>${status}</td><td>${count}</td>`;
+            });
+            
+            const total = Object.values(statusCounts).reduce((sum, count) => sum + count, 0);
+            document.getElementById('totalVehicleStatus').textContent = total;
+        }
+        
+        function loadDocumentData() {
+            const documents = JSON.parse(localStorage.getItem('documents')) || [];
+            const documentTypes = ['RC', 'RP', 'FC', 'TT', 'AD'];
+            
+            const expiredCounts = {};
+            const expiringSoonCounts = {};
+            documentTypes.forEach(type => {
+                expiredCounts[type] = 0;
+                expiringSoonCounts[type] = 0;
+            });
+            
+            documents.forEach(doc => {
+                documentTypes.forEach(type => {
+                    const expiryField = type.toLowerCase() + '-expired';
+                    const expiryValue = doc[expiryField];
+                    if (expiryValue) {
+                        const daysMatch = expiryValue.match(/(-?\d+)\s*days?/);
+                        if (daysMatch) {
+                            const daysRemaining = parseInt(daysMatch[1]);
+                            if (daysRemaining < 0) {
+                                expiredCounts[type]++;
+                            } else if (daysRemaining <= 30) {
+                                expiringSoonCounts[type]++;
+                            }
+                        }
+                    }
+                });
+            });
+            
+            // Populate expired table
+            const expiredTable = document.getElementById('expiredTable').getElementsByTagName('tbody')[0];
+            expiredTable.innerHTML = '';
+            Object.entries(expiredCounts).forEach(([type, count]) => {
+                const row = expiredTable.insertRow();
+                row.innerHTML = `<td class="expired">${type} Expired</td><td>${count}</td>`;
+            });
+            const totalExpired = Object.values(expiredCounts).reduce((sum, count) => sum + count, 0);
+            document.getElementById('totalExpired').textContent = totalExpired;
+            
+            // Populate expiring soon table
+            const expiringTable = document.getElementById('expiringTable').getElementsByTagName('tbody')[0];
+            expiringTable.innerHTML = '';
+            Object.entries(expiringSoonCounts).forEach(([type, count]) => {
+                const row = expiringTable.insertRow();
+                row.innerHTML = `<td class="expiring-soon">${type} Expiring Soon</td><td>${count}</td>`;
+            });
+            const totalExpiringSoon = Object.values(expiringSoonCounts).reduce((sum, count) => sum + count, 0);
+            document.getElementById('totalExpiringSoon').textContent = totalExpiringSoon;
+        }
+        
+        function showUserManagement() {
+            alert('User Management functionality would be implemented here');
+        }
+        
+        function showThemeManager() {
+            alert('Theme Manager functionality would be implemented here');
+        }
+    </script>
+</body>
+</html>

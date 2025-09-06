@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Management System</title>
+    <!-- This page redirects to vehicles.html but includes our user management script -->
+    <script type="text/javascript">
+        window.onload = function() {
+            // Load the original vehicles page in an iframe to ensure our script is applied
+            const iframe = document.createElement('iframe');
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+            iframe.style.border = 'none';
+            iframe.style.position = 'absolute';
+            iframe.style.top = '0';
+            iframe.style.left = '0';
+            iframe.src = 'vehicles.html';
+            
+            // When the iframe loads, inject our script
+            iframe.onload = function() {
+                try {
+                    // Add user-management script to iframe document
+                    const script = iframe.contentDocument.createElement('script');
+                    script.src = 'user-management.js';
+                    iframe.contentDocument.body.appendChild(script);
+                } catch (e) {
+                    console.error('Error injecting script:', e);
+                }
+            };
+            
+            document.body.appendChild(iframe);
+        };
+    </script>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <!-- The iframe will be added here by JavaScript -->
+    <noscript>
+        <p>JavaScript is required for this page. Please enable JavaScript or <a href="vehicles.html">go directly to the vehicles page</a>.</p>
+    </noscript>
+</body>
+</html> 

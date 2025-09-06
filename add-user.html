@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add User</title>
+</head>
+<body>
+    <h1>Adding User</h1>
+    <div id="result"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const resultDiv = document.getElementById('result');
+            
+            // Get existing users
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            
+            // New user credentials
+            const newUser = {
+                username: 'faruk.khan@bga-bd.com',
+                password: '1234',
+                isAdmin: false,
+                email: 'faruk.khan@bga-bd.com'
+            };
+            
+            // Check if user already exists
+            if (users.some(u => u.username === newUser.username)) {
+                resultDiv.innerHTML = '<p style="color: red;">User already exists!</p>';
+            } else {
+                // Add the new user
+                users.push(newUser);
+                localStorage.setItem('users', JSON.stringify(users));
+                resultDiv.innerHTML = '<p style="color: green;">User added successfully: ' + newUser.username + '</p>';
+            }
+            
+            // Display all users
+            resultDiv.innerHTML += '<h2>Current Users:</h2>';
+            const userList = document.createElement('ul');
+            
+            users.forEach(user => {
+                const li = document.createElement('li');
+                li.textContent = user.username + (user.isAdmin ? ' (Admin)' : '');
+                userList.appendChild(li);
+            });
+            
+            resultDiv.appendChild(userList);
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,3727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Management System</title>
+    <!-- Add field manager script first so it runs before other scripts -->
+    <script src="assets/js/fieldManager.js"></script>
+    <!-- Add navigation spacing fix -->
+    <script src="assets/js/navSpacingFix.js"></script>
+    <!-- Add theme manager to navigation -->
+    <script src="assets/js/navThemeManager.js"></script>
+    <!-- Add trips link to navigation -->
+    <script>
+        // Update welcome text with actual username
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            const welcomeText = document.getElementById('welcome-text');
+            if (currentUser && welcomeText) {
+                welcomeText.textContent = `Welcome ${currentUser.username}`;
+            }
+        });
+    </script>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #388e3c;
+            --text-color: #333;
+            --background-color: #f9f9f9;
+            --table-header-bg: #e8f5e9;
+            --table-border: #ddd;
+            --form-bg: rgba(255, 255, 255, 0.95);
+            --input-border: #ccc;
+            --box-shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        /* Dark theme variables */
+        .dark-theme {
+            --primary-color: #43a047;
+            --secondary-color: #2e7d32;
+            --text-color: #f1f1f1;
+            --background-color: #121212;
+            --table-header-bg: #1e3b1e;
+            --table-border: #444;
+            --form-bg: rgba(48, 48, 48, 0.95);
+            --input-border: #555;
+            --box-shadow: rgba(0, 0, 0, 0.3);
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        /* Dark Mode Styles */
+        body.dark-mode {
+            background-color: #202124;
+            color: #e8eaed;
+        }
+        body.dark-mode .form-container,
+        body.dark-mode table,
+        body.dark-mode .modal-content {
+            background-color: #292a2d;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+        body.dark-mode input, 
+        body.dark-mode select {
+            background-color: #3c3c3f;
+            border-color: #5f6368;
+            color: #e8eaed;
+        }
+        body.dark-mode th {
+            background-color: var(--primary-color);
+        }
+        body.dark-mode td {
+            border-bottom-color: #3c3c3f;
+        }
+        body.dark-mode tr:hover {
+            background-color: #35363a;
+        }
+        body.dark-mode .user-info,
+        body.dark-mode label {
+            color: #e8eaed;
+        }
+        body.dark-mode .user-actions a {
+            color: var(--primary-color);
+        }
+        body.dark-mode .settings-nav-item {
+            color: #bdc1c6;
+        }
+        body.dark-mode .settings-nav-item.active-nav {
+            background-color: rgba(255,255,255,0.05);
+        }
+        body.dark-mode .settings-nav-item:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+        body.dark-mode .settings-nav-item.active-nav {
+            color: var(--primary-color);
+        }
+        body.dark-mode #system-tab-content h3,
+        body.dark-mode #appearance-tab-content h3,
+        body.dark-mode #about-tab-content h3 {
+            color: #e8eaed;
+        }
+        body.dark-mode #system-tab-content p,
+        body.dark-mode #appearance-tab-content p,
+        body.dark-mode #about-tab-content p,
+        body.dark-mode #system-tab-content span,
+        body.dark-mode #appearance-tab-content span,
+        body.dark-mode #about-tab-content span {
+            color: #bdc1c6;
+        }
+        /* End Dark Mode Styles */
+        
+        .form-container {
+            background-color: var(--form-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px var(--box-shadow);
+            margin-bottom: 20px;
+        }
+        .form-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .form-row .form-group {
+            flex: 1;
+            min-width: 250px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            border: 1px solid var(--primary-color);
+        }
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: white;
+            border: 1px solid var(--secondary-color);
+        }
+        .btn-danger {
+            background-color: #f44336;
+            color: white;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+            color: black;
+        }
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 0.875rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--table-border);
+        }
+        th {
+            background-color: var(--table-header-bg);
+            color: var(--text-color);
+            font-weight: bold;
+        }
+        tr:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        .dark-theme tr:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        .user-info {
+            text-align: right;
+            margin-bottom: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+        .user-info span {
+            font-weight: bold;
+        }
+        .user-actions a {
+            color: #666666;
+            text-decoration: none;
+            margin-left: 10px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            width: 50%;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: black;
+        }
+        
+        /* Theme Management Styles */
+        .theme-controls {
+            display: none;
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            width: 250px;
+            z-index: 1000;
+        }
+        .theme-controls.visible {
+            display: block;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+        }
+        .color-options {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .color-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .color-option.selected {
+            border-color: #333;
+        }
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+        .alignment-options {
+            display: flex;
+            gap: 10px;
+        }
+        .alignment-option {
+            padding: 5px 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .alignment-option.selected {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .slider {
+            width: 100%;
+            margin-top: 5px;
+        }
+        
+        /* Additional styles for Chrome-like theme manager */
+        .settings-sidebar {
+            width: 200px;
+            background-color: #f8f9fa;
+            border-right: 1px solid #ddd;
+            overflow-y: auto;
+            transition: background-color 0.3s;
+        }
+        
+        body.dark-mode .settings-sidebar {
+            background-color: #292a2d;
+            border-right-color: #3c3c3f;
+        }
+        
+        .settings-nav-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            color: #000000;
+        }
+        
+        .settings-nav-item:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+        
+        .settings-nav-item.active-nav {
+            background-color: rgba(0,0,0,0.05);
+            border-left-color: var(--primary-color, #4CAF50) !important;
+            color: var(--primary-color, #4CAF50);
+            font-weight: 500;
+        }
+        
+        /* Toggle switch style */
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider.round:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider.round {
+            background-color: var(--primary-color, #4CAF50);
+        }
+        input:checked + .slider.round:before {
+            transform: translateX(22px);
+        }
+        
+        /* UI Density styles */
+        .ui-compact input, 
+        .ui-compact select, 
+        .ui-compact button:not(.btn-sm) {
+            padding: 4px 8px;
+        }
+        
+        .ui-compact input, 
+        .ui-compact select {
+            margin-bottom: 6px;
+        }
+        
+        .ui-compact td, 
+        .ui-compact th {
+            padding: 6px 10px;
+        }
+        
+        .ui-compact .form-group {
+            margin-bottom: 8px;
+        }
+        
+        .ui-default input, 
+        .ui-default select, 
+        .ui-default button:not(.btn-sm) {
+            padding: 8px;
+        }
+        
+        .ui-default input, 
+        .ui-default select {
+            margin-bottom: 10px;
+        }
+        
+        .ui-default td, 
+        .ui-default th {
+            padding: 12px 15px;
+        }
+        
+        .ui-default .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .ui-comfortable input, 
+        .ui-comfortable select, 
+        .ui-comfortable button:not(.btn-sm) {
+            padding: 10px 12px;
+        }
+        
+        .ui-comfortable input, 
+        .ui-comfortable select {
+            margin-bottom: 15px;
+        }
+        
+        .ui-comfortable td, 
+        .ui-comfortable th {
+            padding: 16px 20px;
+        }
+        
+        .ui-comfortable .form-group {
+            margin-bottom: 20px;
+        }
+        
+        form {
+            transition: all 0.3s ease-in-out;
+            overflow: hidden;
+            opacity: 1;
+            max-height: 1000px; /* A value large enough to fit all content */
+        }
+
+        /* Field Customizer Modal specific styles */
+        #fieldCustomizerModal .modal-content {
+            margin: 5% auto; /* Position closer to the top */
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        /* Field Customizer Modal specific styles */
+        #fieldCustomizerModal .modal-content {
+            margin: 2% auto; /* Position even closer to the top */
+            max-width: 800px;
+            max-height: 85vh; /* Slightly smaller to ensure it fits on most screens */
+            overflow-y: auto;
+            padding: 25px;
+        }
+        
+        #fieldCustomizerModal h2 {
+            text-align: center;
+            color: var(--primary-color, #4CAF50);
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        /* Improve scrolling experience for the field customizer */
+        #fieldCustomizerModal .modal-content::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        #fieldCustomizerModal .modal-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 5px;
+        }
+        
+        #fieldCustomizerModal .modal-content::-webkit-scrollbar-thumb {
+            background: var(--primary-color, #4CAF50);
+            border-radius: 5px;
+        }
+        
+        #fieldCustomizerModal .modal-content::-webkit-scrollbar-thumb:hover {
+            background: #388e3c;
+        }
+        
+        /* Add smooth scrolling to the entire modal */
+        #fieldCustomizerModal {
+            scroll-behavior: smooth;
+        }
+        
+        /* Additional styles for buttons */
+        .small-button {
+            background-color: var(--primary-color, #4CAF50);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .small-button:hover {
+            background-color: var(--secondary-color, #388e3c);
+        }
+        .setting-button {
+            width: 100%;
+            padding: 8px 12px;
+            background-color: #f8f9fa;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            color: #202124;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .setting-button:hover {
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--form-bg);
+            border-radius: 8px;
+            box-shadow: 0 0 10px var(--box-shadow);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+            background-color: var(--form-bg);
+            border-radius: 8px;
+            box-shadow: 0 0 10px var(--box-shadow);
+            padding: 10px;
+        }
+        
+        /* Navigation Bar Styles */
+        .nav-container {
+            width: 100%;
+            background-color: var(--form-bg);
+            border-radius: 8px;
+            box-shadow: 0 0 10px var(--box-shadow);
+            overflow: hidden;
+        }
+        
+        .navigation-bar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            padding: 10px;
+        }
+        
+        .nav-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 16px;
+            background-color: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            flex: 1;
+            text-align: center;
+            margin: 5px;
+            border: 1px solid transparent;
+        }
+        
+        .nav-button i {
+            margin-right: 8px;
+            font-size: 16px;
+        }
+        
+        .nav-button:hover {
+            background-color: #5a6268;
+        }
+        
+        .nav-button.active {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Dark mode styles for navigation */
+        body.dark-mode .nav-container {
+            background-color: #292a2d;
+        }
+        
+        body.dark-mode .nav-button {
+            color: #e8eaed;
+        }
+        
+        body.dark-mode .nav-button:hover {
+            background-color: rgba(76, 175, 80, 0.15);
+        }
+        
+        /* Responsive navigation for mobile devices */
+        @media (max-width: 768px) {
+            .navigation-bar {
+                flex-direction: column;
+            }
+            
+            .nav-button {
+                width: 100%;
+                margin: 3px 0;
+            }
+        }
+    </style>
+    <!-- Add PapaParse for CSV parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <!-- Add custom slideshow functionality for login background -->
+    <script src="assets/js/vehicleCustomSlideshow.js"></script>
+</head>
+<body>
+    <!-- User info -->
+    <div class="user-info">
+        <div class="user-actions">
+            <span id="welcome-text" style="font-weight: bold; margin-right: 15px;">Welcome to Admin</span>
+            <a href="#" onclick="showUserManagement()">User Management</a>
+            <a href="#" onclick="showThemeManager()">Theme</a>
+            <a href="login.html">Logout</a>
+        </div>
+    </div>
+    
+    <!-- Navigation Bar -->
+    <div class="nav-container">
+        <div class="navigation-bar" style="justify-content: flex-end;">
+            <a href="Dashboard.html" class="nav-button" style="flex: 0 0 auto;">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a href="vehicles.html" class="nav-button active" style="flex: 0 0 auto;">
+                <i class="fas fa-truck"></i> Vehicles
+            </a>
+            <a href="Driver information.html" class="nav-button" style="flex: 0 0 auto;">
+                <i class="fas fa-id-card"></i> Driver Information
+            </a>
+            <a href="vehicle-status.html" class="nav-button" style="flex: 0 0 auto;">
+                <i class="fas fa-chart-line"></i> Vehicle Status
+            </a>
+            <a href="Documents.html" class="nav-button" style="flex: 0 0 auto;">
+                <i class="fas fa-file-alt"></i> Documents
+            </a>
+            <a href="Trips.html" class="nav-button" style="flex: 0 0 auto;">
+                <i class="fas fa-route"></i> Trips
+            </a>
+        </div>
+    </div>
+    
+    <!-- Vehicle Management Section -->
+    <div class="form-container">
+        <div class="header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h2 id="formTitle">Vehicles</h2>
+            <div>
+                <button type="button" class="btn-secondary" id="export-csv">
+                    <i class="fas fa-download"></i> Export CSV
+                </button>
+                <button type="button" class="btn-secondary" id="import-csv">
+                    <i class="fas fa-upload"></i> Import CSV
+                </button>
+                <button type="button" id="toggleFormBtn" class="btn-primary" onclick="toggleForm()">
+                    Hide Form
+                </button>
+                <button type="button" id="customize-fields-btn" class="btn-secondary" onclick="showFieldCustomizer()">
+                    <i class="fas fa-cog"></i> Customize Fields
+                </button>
+            </div>
+        </div>
+        
+        <!-- Single unified vehicle form with ID that matches what app.js expects -->
+        <form id="vehicle-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="vehicle-no">Vehicle No:</label>
+                    <div style="position: relative;">
+                        <input type="text" id="vehicle-no" name="vehicle-no" required>
+                        <div id="vehicleSuggestions" style="position: absolute; width: 100%; max-height: 150px; overflow-y: auto; background-color: white; border: 1px solid #ddd; border-top: none; z-index: 100; display: none;"></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="driver-name">Driver Name:</label>
+                    <input type="text" id="driver-name" name="driver-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="contact-no">Contact No:</label>
+                    <input type="tel" id="contact-no" name="contact-no" pattern="[0-9]{11}" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="capacity">Capacity (Ton):</label>
+                    <input type="number" id="capacity" name="capacity" required placeholder="Enter capacity in tons">
+                </div>
+                <div class="form-group">
+                    <label for="status">Status:</label>
+                    <select id="status" name="status">
+                        <option value="Available">Available</option>
+                        <option value="In Transit">In Transit</option>
+                        <option value="Maintenance">Maintenance</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="vehicle-type">Vehicle Type:</label>
+                    <select id="vehicle-type" name="vehicle-type">
+                        <option value="Truck">Truck</option>
+                        <option value="Van">Van</option>
+                        <option value="Trailer">Trailer</option>
+                        <option value="Pickup">Pickup</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="pf-token">PF / Token:</label>
+                    <input type="text" id="pf-token" name="pf-token" placeholder="Enter PF or token number">
+                </div>
+                <div class="form-group">
+                    <label for="run-from">Run from:</label>
+                    <input type="text" id="run-from" name="run-from" placeholder="Enter starting location">
+                </div>
+            </div>
+            <div class="form-row">
+                <button type="submit" class="btn-primary">Save Vehicle</button>
+                <button type="reset" class="btn-secondary">Clear Form</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Add search functionality -->
+    <div style="margin-top: 20px; margin-bottom: 10px; display: flex; align-items: center;">
+        <label for="searchVehicleNo" style="margin-right: 10px; font-weight: bold;">Search by Vehicle No:</label>
+        <div style="position: relative; width: 250px;">
+            <input type="text" id="searchVehicleNo" placeholder="Enter vehicle number..." style="padding: 8px; width: 100%; border: 1px solid #ddd; border-radius: 4px;">
+            <div id="searchSuggestions" style="position: absolute; width: 100%; max-height: 150px; overflow-y: auto; background-color: white; border: 1px solid #ddd; border-top: none; z-index: 100; display: none;"></div>
+        </div>
+        <button type="button" id="searchBtn" class="btn-primary" style="margin-left: 10px;">Search</button>
+        <button type="button" id="clearSearchBtn" class="btn-secondary" style="margin-left: 10px;">Clear</button>
+    </div>
+
+    <div class="table-container">
+    <table id="vehicleTable">
+        <thead>
+            <tr id="table-header">
+                <!-- Table headers will be dynamically generated based on custom fields -->
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="vehicleTableBody">
+            <!-- Vehicle data rows will be populated here -->
+        </tbody>
+    </table>
+    </div>
+
+    <!-- Hidden file input for importing CSV -->
+    <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="handleFileSelect(event)">
+
+    <!-- User Management Modal -->
+    <div id="userManagementModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeUserManagement()">&times;</span>
+            <h2>User Management</h2>
+            <div id="user-list" style="margin-bottom: 20px;">
+                <!-- User list will be populated here -->
+            </div>
+            <h3>Add New User</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="new-username">Username</label>
+                    <input type="text" id="new-username" placeholder="Enter username">
+                </div>
+                <div class="form-group">
+                    <label for="new-password">Password</label>
+                    <input type="password" id="new-password" placeholder="Enter password">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="is-admin"> Admin privileges
+                </label>
+            </div>
+            <button class="btn-primary" onclick="addUser()">Add User</button>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div id="changePasswordModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeChangePassword()">&times;</span>
+            <h2>Change Password</h2>
+            <div class="form-group">
+                <label for="current-password">Current Password</label>
+                <input type="password" id="current-password" placeholder="Enter current password">
+            </div>
+            <div class="form-group">
+                <label for="new-user-password">New Password</label>
+                <input type="password" id="new-user-password" placeholder="Enter new password">
+            </div>
+            <div class="form-group">
+                <label for="confirm-password">Confirm Password</label>
+                <input type="password" id="confirm-password" placeholder="Confirm new password">
+            </div>
+            <button class="btn-primary" onclick="changePassword()">Change Password</button>
+            <div id="password-message" style="margin-top: 10px;"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div id="login-footer" style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: rgba(255, 255, 255, 0.25); text-align: center; padding: 10px 0; border-top: 3px solid var(--primary-color, #4CAF50); font-family: var(--font-family); color: #333; font-size: 14px; opacity: 0; transition: opacity 0.5s ease; z-index: 10; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 -5px 15px rgba(0,0,0,0.08); text-shadow: 0 0 3px rgba(255,255,255,0.8);">
+        <div style="max-width: 600px; margin: 0 auto; padding: 0 20px;">
+            <strong>Developed by Md.Shamim Rashed</strong><br>
+            Copyright © 2025 All Rights Reserved
+        </div>
+    </div>
+
+    <!-- Field Customizer Modal -->
+    <div id="fieldCustomizerModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeFieldCustomizer()">&times;</span>
+            <h2>Customize Vehicle Fields</h2>
+            <p>Configure which fields appear in the form and table. You can also add new custom fields.</p>
+            
+            <!-- Quick Navigation -->
+            <div class="quick-nav" style="display: flex; gap: 10px; margin-bottom: 15px; background: #f8f9fa; padding: 10px; border-radius: 5px;">
+                <a href="#existing-fields-section" style="text-decoration: none; color: var(--primary-color);">Existing Fields</a> | 
+                <a href="#add-new-field-section" style="text-decoration: none; color: var(--primary-color);">Add New Field</a>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <h3 id="existing-fields-section">Existing Fields</h3>
+                <div id="existingFields" style="margin-bottom: 20px;">
+                    <!-- Will be populated dynamically -->
+                </div>
+                
+                <h3 id="add-new-field-section">Add New Field</h3>
+                <div style="display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
+                    <div class="form-group" style="flex: 2; min-width: 200px;">
+                        <label>Field Name:</label>
+                        <input type="text" id="newFieldName" placeholder="Enter field name">
+                    </div>
+                    <div class="form-group" style="flex: 1; min-width: 150px;">
+                        <label>Field Type:</label>
+                        <select id="newFieldType">
+                            <option value="text">Text</option>
+                            <option value="number">Number</option>
+                            <option value="date">Date</option>
+                            <option value="select">Dropdown</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex: 2; min-width: 200px;">
+                        <label>Options (for dropdown, comma separated):</label>
+                        <input type="text" id="newFieldOptions" placeholder="Option1, Option2, Option3">
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Required:</label>
+                        <input type="checkbox" id="newFieldRequired">
+                    </div>
+                    <div class="form-group" style="flex: 2;">
+                        <label>Default Value:</label>
+                        <input type="text" id="newFieldDefault" placeholder="Enter default value">
+                    </div>
+                </div>
+                <button class="btn-primary" id="add-field-btn">Add Field</button>
+            </div>
+            
+            <div style="margin-top: 20px; display: flex; justify-content: space-between;">
+                <button class="btn-secondary" id="reset-fields-btn">Reset to Default</button>
+                <button class="btn-primary" id="save-fields-btn">Save Changes</button>
+            </div>
+            
+            <!-- Back to top button -->
+            <div id="back-to-top" style="position: fixed; bottom: 20px; right: 20px; display: none; z-index: 1000;">
+                <button class="btn-primary" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;" onclick="scrollToTop()">
+                    <i class="fas fa-arrow-up"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Back to top functionality for field customizer modal
+        const fieldCustomizerModal = document.getElementById('fieldCustomizerModal');
+        const backToTopBtn = document.getElementById('back-to-top');
+        
+        fieldCustomizerModal.addEventListener('scroll', function() {
+            if (fieldCustomizerModal.scrollTop > 300) {
+                backToTopBtn.style.display = 'block';
+            } else {
+                backToTopBtn.style.display = 'none';
+            }
+        });
+        
+        function scrollToTop() {
+            fieldCustomizerModal.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+    </script>
+
+    <script>
+        // Initialize app when document is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Make sure all components are initialized
+            initApp();
+            
+            // Modify the toggle button to show only icon
+            const toggleBtn = document.getElementById('toggleNavBtn');
+            if (toggleBtn) {
+                // Store original innerHTML for reference
+                const originalHTML = toggleBtn.innerHTML;
+                
+                // Replace with icon only (preserving the original function call)
+                toggleBtn.innerHTML = '<i class="fas fa-bars"></i>';
+                
+                // Add tooltip to show the action
+                toggleBtn.title = "Toggle Navigation";
+                
+                // Apply some additional styling
+                toggleBtn.style.width = "40px";
+                toggleBtn.style.height = "40px";
+                toggleBtn.style.borderRadius = "50%";
+                toggleBtn.style.display = "flex";
+                toggleBtn.style.alignItems = "center";
+                toggleBtn.style.justifyContent = "center";
+                toggleBtn.style.backgroundColor = "var(--primary-color)";
+                toggleBtn.style.color = "white";
+                
+                // Override the original toggle function but still call it
+                const originalToggle = toggleNavBar;
+                window.toggleNavBar = function() {
+                    // Call the original function
+                    originalToggle();
+                    
+                    // But don't let it change the button text - just keep the icon
+                    toggleBtn.innerHTML = '<i class="fas fa-bars"></i>';
+                    
+                    // Update tooltip based on state
+                    const navContainer = document.getElementById('navContainer');
+                    if (navContainer.style.display === 'none') {
+                        toggleBtn.title = "Show Navigation";
+                    } else {
+                        toggleBtn.title = "Hide Navigation";
+                    }
+                };
+                
+                // Initialize tooltip based on current state
+                const navContainer = document.getElementById('navContainer');
+                if (navContainer.style.display === 'none') {
+                    toggleBtn.title = "Show Navigation";
+                } else {
+                    toggleBtn.title = "Hide Navigation";
+                }
+            }
+        });
+        
+        function initApp() {
+            // Initialize default fields if none exist
+            if (!localStorage.getItem('customFields')) {
+                const defaultFields = [
+                    { name: 'Vehicle No', type: 'text', required: true, display: true, order: 1 },
+                    { name: 'Driver Name', type: 'text', required: true, display: true, order: 2 },
+                    { name: 'Contact No', type: 'text', required: true, display: true, order: 3 },
+                    { name: 'Capacity', type: 'text', required: true, display: true, order: 4 },
+                    { name: 'Status', type: 'select', options: 'Available,In Transit,Maintenance', required: false, display: true, order: 5 },
+                    { name: 'Vehicle Type', type: 'select', options: 'Truck,Van,Trailer,Pickup', required: false, display: true, order: 6 },
+                    { name: 'PF / Token', type: 'text', required: false, display: true, order: 7 },
+                    { name: 'Run from', type: 'text', required: false, display: true, order: 8 }
+                ];
+                localStorage.setItem('customFields', JSON.stringify(defaultFields));
+            }
+            
+            // Set up navigation bar active state
+            setActiveNavButton();
+            
+            // Generate the form dynamically based on custom fields
+            generateDynamicForm();
+            
+            // Update table header and display vehicles
+            updateTableHeader();
+            displayVehicles();
+            
+            // Set up search functionality
+            document.getElementById('searchVehicleNo').addEventListener('input', function() {
+                showSearchSuggestions(this.value);
+            });
+            
+            // Initialize auto-hide footer
+            setTimeout(() => {
+                const footer = document.getElementById('login-footer');
+                if (footer) {
+                    footer.style.opacity = '1';
+                    setTimeout(() => { 
+                        footer.style.opacity = '0';
+                    }, 5000);
+                }
+            }, 1000);
+            
+            console.log("Application initialized");
+        }
+        
+        // Function to generate form dynamically based on custom fields
+        function generateDynamicForm() {
+            console.log("Generating dynamic form");
+            const form = document.getElementById('vehicle-form');
+            if (!form) {
+                console.error("Vehicle form not found");
+                return;
+            }
+            
+            // Clear existing form rows except the last one (buttons)
+            const formRows = form.querySelectorAll('.form-row');
+            for (let i = 0; i < formRows.length - 1; i++) {
+                formRows[i].innerHTML = '';
+            }
+            
+            // Get custom fields
+            const customFields = JSON.parse(localStorage.getItem('customFields')) || [];
+            
+            // Group fields into rows of 3
+            const fieldGroups = [];
+            let currentGroup = [];
+            
+            customFields.forEach(field => {
+                currentGroup.push(field);
+                if (currentGroup.length === 3) {
+                    fieldGroups.push(currentGroup);
+                    currentGroup = [];
+                }
+            });
+            
+            // Add any remaining fields
+            if (currentGroup.length > 0) {
+                fieldGroups.push(currentGroup);
+            }
+            
+            // Create or update form rows
+            fieldGroups.forEach((group, index) => {
+                let row;
+                
+                // Use existing rows if available, otherwise create new ones
+                if (index < formRows.length - 1) {
+                    row = formRows[index];
+                } else {
+                    row = document.createElement('div');
+                    row.className = 'form-row';
+                    // Insert before the last row (buttons)
+                    form.insertBefore(row, formRows[formRows.length - 1]);
+                }
+                
+                // Add fields to the row
+                group.forEach(field => {
+                    const fieldId = field.name.toLowerCase().replace(/\s+/g, '-');
+                    
+                    const formGroup = document.createElement('div');
+                    formGroup.className = 'form-group';
+                    
+                    const label = document.createElement('label');
+                    label.setAttribute('for', fieldId);
+                    label.textContent = field.name + ':';
+                    
+                    let input;
+                    
+                    if (field.type === 'select') {
+                        input = document.createElement('select');
+                        
+                        // Add options if available
+                        if (field.options) {
+                            field.options.split(',').forEach(option => {
+                                const optionEl = document.createElement('option');
+                                optionEl.value = option.trim();
+                                optionEl.textContent = option.trim();
+                                input.appendChild(optionEl);
+                            });
+                        }
+                    } else {
+                        input = document.createElement('input');
+                        input.type = field.type || 'text';
+                        
+                        if (field.type === 'number') {
+                            input.step = 'any';
+                        }
+                        
+                        input.placeholder = `Enter ${field.name.toLowerCase()}`;
+                    }
+                    
+                    input.id = fieldId;
+                    input.name = fieldId;
+                    
+                    if (field.required) {
+                        input.required = true;
+                    }
+                    
+                    // If there's a default value, set it
+                    if (field.defaultValue) {
+                        input.value = field.defaultValue;
+                    }
+                    
+                    formGroup.appendChild(label);
+                    formGroup.appendChild(input);
+                    row.appendChild(formGroup);
+                });
+            });
+            
+            console.log("Dynamic form generated");
+        }
+
+        // Add/update the table header based on custom fields
+        function updateTableHeader() {
+            console.log("Updating table header");
+            const tableHeader = document.getElementById('table-header');
+            if (!tableHeader) {
+                console.error("Table header not found");
+                return;
+            }
+            
+            // Clear existing header cells
+            tableHeader.innerHTML = '';
+            
+            // Get custom fields
+            const customFields = JSON.parse(localStorage.getItem('customFields')) || [];
+            
+            // Add header cells for visible custom fields
+            customFields.filter(field => field.display).forEach(field => {
+                const headerCell = document.createElement('th');
+                headerCell.textContent = field.name;
+                tableHeader.appendChild(headerCell);
+            });
+            
+            // Add Actions header cell
+            const actionsHeader = document.createElement('th');
+            actionsHeader.textContent = 'Actions';
+            tableHeader.appendChild(actionsHeader);
+        }
+        
+        // ======================================
+        // Search and Autofill Functions
+        // ======================================
+        
+        // Function to show search suggestions as user types
+        function showSearchSuggestions(query) {
+            console.log("Showing search suggestions for:", query);
+            if (!query) {
+                document.getElementById('searchSuggestions').style.display = 'none';
+                return;
+            }
+            
+            // Get all vehicles from localStorage
+            const vehicles = JSON.parse(localStorage.getItem('vehicles')) || [];
+            const queryLower = query.toLowerCase();
+            
+            // Find vehicles matching the query
+            const matchedVehicles = vehicles.filter(vehicle => {
+                // Get the vehicle number field however it's stored (could be vehicleno, vehicleNo, or vehicle-no)
+                const vehicleNo = vehicle.vehicleno || vehicle.vehicleNo || vehicle['vehicle-no'] || '';
+                return vehicleNo.toLowerCase().includes(queryLower);
+            });
+            
+            // Show the suggestions
+            const suggestionsDiv = document.getElementById('searchSuggestions');
+            suggestionsDiv.innerHTML = '';
+            
+            if (matchedVehicles.length > 0) {
+                matchedVehicles.forEach(vehicle => {
+                    // Get the vehicle number field
+                    const vehicleNo = vehicle.vehicleno || vehicle.vehicleNo || vehicle['vehicle-no'] || '';
+                    
+                    const div = document.createElement('div');
+                    div.className = 'suggestion-item';
+                    div.style.padding = '8px';
+                    div.style.cursor = 'pointer';
+                    div.style.borderBottom = '1px solid #eee';
+                    div.textContent = vehicleNo;
+                    
+                    // Add hover effect
+                    div.addEventListener('mouseenter', () => div.style.backgroundColor = '#f1f1f1');
+                    div.addEventListener('mouseleave', () => div.style.backgroundColor = 'white');
+                    
+                    // Add click event
+                    div.addEventListener('click', () => {
+                        document.getElementById('searchVehicleNo').value = vehicleNo;
+                        suggestionsDiv.style.display = 'none';
+                        searchVehicles();
+                    });
+                    
+                    suggestionsDiv.appendChild(div);
+                });
+                
+                suggestionsDiv.style.display = 'block';
+            } else {
+                suggestionsDiv.style.display = 'none';
+            }
+        }
+        
+        // Function to search vehicles by vehicle number
+        function searchVehicles() {
+            console.log("Searching vehicles");
+            const query = document.getElementById('searchVehicleNo').value.trim();
+            if (!query) {
+                // If query is empty, show all vehicles
+                if (typeof displayVehicles === 'function') {
+                    displayVehicles();
+                }
+                return;
+            }
+            
+            // Get all vehicles from localStorage
+            const vehicles = JSON.parse(localStorage.getItem('vehicles')) || [];
+            const queryLower = query.toLowerCase();
+            
+            // Find vehicles matching the query
+            const matchedVehicles = vehicles.filter(vehicle => {
+                // Get the vehicle number field
+                const vehicleNo = vehicle.vehicleno || vehicle.vehicleNo || vehicle['vehicle-no'] || '';
+                return vehicleNo.toLowerCase().includes(queryLower);
+            });
+            
+            // Display the filtered vehicles
+            if (typeof displayVehicles === 'function') {
+                displayVehicles(matchedVehicles);
+            } else {
+                console.error("displayVehicles function not found");
+                // Fallback display logic
+                const tbody = document.getElementById('vehicleTableBody');
+                if (tbody) {
+                    tbody.innerHTML = '';
+                    
+                    if (matchedVehicles.length === 0) {
+                        const tr = document.createElement('tr');
+                        const td = document.createElement('td');
+                        td.textContent = 'No matching vehicles found';
+                        td.colSpan = 7; // Adjust colspan as needed
+                        td.style.textAlign = 'center';
+                        tr.appendChild(td);
+                        tbody.appendChild(tr);
+                        return;
+                    }
+                    
+                    displayResults(matchedVehicles);
+                }
+            }
+            
+            // Hide the suggestions
+            document.getElementById('searchSuggestions').style.display = 'none';
+        }
+        
+        // Function to clear the search and show all vehicles
+        function clearSearch() {
+            console.log("Clearing search");
+            document.getElementById('searchVehicleNo').value = '';
+            document.getElementById('searchSuggestions').style.display = 'none';
+            
+            // Display all vehicles
+            if (typeof displayVehicles === 'function') {
+                displayVehicles();
+            }
+        }
+        
+        // Main function to display all vehicles in the table
+        function displayVehicles(vehiclesToShow = null) {
+            const vehicles = vehiclesToShow || JSON.parse(localStorage.getItem('vehicles')) || [];
+            displayResults(vehicles);
+        }
+        
+        // Simple function to display search results if the main displayVehicles function is not available
+        function displayResults(vehicles) {
+            const tbody = document.getElementById('vehicleTableBody');
+            if (!tbody) return;
+            
+            // Get custom fields for displaying
+            const customFields = JSON.parse(localStorage.getItem('customFields')) || [];
+            const displayFields = customFields.filter(field => field.display);
+            
+            vehicles.forEach(vehicle => {
+                const tr = document.createElement('tr');
+                
+                // Display fields in the table
+                displayFields.forEach(field => {
+                    const fieldKey = field.name.toLowerCase().replace(/\s+/g, '');
+                    const td = document.createElement('td');
+                    
+                    // Get the value based on various possible key formats
+                    let value = vehicle[fieldKey] || vehicle[field.name] || '';
+                    
+                    // Apply special styling for status
+                    if (field.name === 'Status') {
+                        td.className = `status-${value.toLowerCase()}`;
+                    }
+                    
+                    td.textContent = value;
+                    tr.appendChild(td);
+                });
+                
+                // Add action buttons
+                const actionsTd = document.createElement('td');
+                actionsTd.innerHTML = `
+                    <button class="edit-btn" data-id="${vehicle.id}">Edit</button>
+                    <button class="delete-btn" data-id="${vehicle.id}">Delete</button>
+                `;
+                tr.appendChild(actionsTd);
+                
+                tbody.appendChild(tr);
+            });
+            
+            // Set up event handlers for buttons
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    if (typeof editVehicle === 'function') {
+                        editVehicle(id);
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    if (typeof deleteVehicle === 'function') {
+                        deleteVehicle(id);
+                    }
+                });
+            });
+        }
+        
+        // Function to auto-fill vehicle form from existing data
+        function autoFillVehicleDetails(vehicleNo) {
+            console.log("Auto-filling vehicle details for:", vehicleNo);
+            if (!vehicleNo) {
+                document.getElementById('vehicleSuggestions').style.display = 'none';
+                return;
+            }
+            
+            // Get all vehicles from localStorage
+            const vehicles = JSON.parse(localStorage.getItem('vehicles')) || [];
+            const queryLower = vehicleNo.toLowerCase();
+            
+            // Find vehicles matching the query
+            const matchedVehicles = vehicles.filter(vehicle => {
+                // Get the vehicle number field
+                const vNo = vehicle.vehicleno || vehicle.vehicleNo || vehicle['vehicle-no'] || '';
+                return vNo.toLowerCase().includes(queryLower);
+            });
+            
+            // Show the suggestions
+            const suggestionsDiv = document.getElementById('vehicleSuggestions');
+            suggestionsDiv.innerHTML = '';
+            
+            if (matchedVehicles.length > 0) {
+                matchedVehicles.forEach(vehicle => {
+                    // Get the vehicle number field
+                    const vNo = vehicle.vehicleno || vehicle.vehicleNo || vehicle['vehicle-no'] || '';
+                    
+                    const div = document.createElement('div');
+                    div.className = 'suggestion-item';
+                    div.style.padding = '8px';
+                    div.style.cursor = 'pointer';
+                    div.style.borderBottom = '1px solid #eee';
+                    div.textContent = vNo;
+                    
+                    // Add hover effect
+                    div.addEventListener('mouseenter', () => div.style.backgroundColor = '#f1f1f1');
+                    div.addEventListener('mouseleave', () => div.style.backgroundColor = 'white');
+                    
+                    // Add click event to fill the form with the selected vehicle's data
+                    div.addEventListener('click', () => {
+                        fillForm(vehicle);
+                        suggestionsDiv.style.display = 'none';
+                    });
+                    
+                    suggestionsDiv.appendChild(div);
+                });
+                
+                suggestionsDiv.style.display = 'block';
+            } else {
+                suggestionsDiv.style.display = 'none';
+            }
+        }
+        
+        // Helper function to fill the form with selected vehicle data
+        function fillForm(vehicle) {
+            // Get all the custom fields
+            const customFields = JSON.parse(localStorage.getItem('customFields')) || [];
+            
+            // For each custom field, try to find a matching field in the vehicle object
+            customFields.forEach(field => {
+                const fieldId = field.name.toLowerCase().replace(/\s+/g, '-');
+                const element = document.getElementById(fieldId);
+                
+                if (element) {
+                    // Try various possible ways the data might be stored
+                    const fieldKey = field.name.toLowerCase().replace(/\s+/g, '');
+                    const value = vehicle[fieldKey] || vehicle[field.name] || vehicle[fieldId] || '';
+                    
+                    // Set the field value
+                    if (element.tagName === 'SELECT') {
+                        // For select elements, find the matching option
+                        const options = Array.from(element.options);
+                        const matchingOption = options.find(opt => opt.value === value);
+                        if (matchingOption) {
+                            element.value = value;
+                        }
+                    } else {
+                        // For input elements
+                        element.value = value;
+                    }
+                }
+            });
+        }
+    </script>
+
+    <!-- External JavaScript libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+    
+    <!-- Application JavaScript -->
+    <script src="assets/js/app.js"></script>
+    <script>
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof init === 'function') {
+                init();
+            }
+        });
+    </script>
+
+    <!-- Custom field management script -->
+    <script>
+        // When the document is loaded, initialize the field customizer
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up event listeners for field customizer
+            const customizeFieldsBtn = document.getElementById('customize-fields-btn');
+            if (customizeFieldsBtn) {
+                customizeFieldsBtn.addEventListener('click', showFieldCustomizer);
+            }
+
+            // Modal close button
+            const closeModalBtn = document.querySelector('#fieldCustomizerModal .close');
+            if (closeModalBtn) {
+                closeModalBtn.addEventListener('click', closeFieldCustomizer);
+            }
+
+            // Add field button
+            const addFieldBtn = document.getElementById('add-field-btn');
+            if (addFieldBtn) {
+                addFieldBtn.addEventListener('click', addNewField);
+            }
+
+            // Reset fields button
+            const resetFieldsBtn = document.getElementById('reset-fields-btn');
+            if (resetFieldsBtn) {
+                resetFieldsBtn.addEventListener('click', resetDefaultFields);
+            }
+
+            // Save fields button
+            const saveFieldsBtn = document.getElementById('save-fields-btn');
+            if (saveFieldsBtn) {
+                saveFieldsBtn.addEventListener('click', saveFieldCustomization);
+            }
+            
+            // Set up search functionality
+            const searchInput = document.getElementById('searchVehicleNo');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    showSearchSuggestions(this.value);
+                });
+            }
+            
+            const searchBtn = document.getElementById('searchBtn');
+            if (searchBtn) {
+                searchBtn.addEventListener('click', searchVehicles);
+            }
+            
+            const clearSearchBtn = document.getElementById('clearSearchBtn');
+            if (clearSearchBtn) {
+                clearSearchBtn.addEventListener('click', clearSearch);
+            }
+            
+            // Set up vehicle form autofill
+            const vehicleNoInput = document.getElementById('vehicle-no');
+            if (vehicleNoInput) {
+                vehicleNoInput.addEventListener('input', function() {
+                    autoFillVehicleDetails(this.value);
+                });
+            }
+
+            // Initialize default fields if none exist
+            if (!localStorage.getItem('customFields')) {
+                const defaultFields = [
+                    { name: 'Vehicle No', type: 'text', required: true, display: true, order: 1 },
+                    { name: 'Driver Name', type: 'text', required: true, display: true, order: 2 },
+                    { name: 'Contact No', type: 'text', required: true, display: true, order: 3 },
+                    { name: 'Capacity', type: 'text', required: true, display: true, order: 4 },
+                    { name: 'Status', type: 'select', options: 'Available,In Transit,Maintenance', required: false, display: true, order: 5 },
+                    { name: 'Vehicle Type', type: 'select', options: 'Truck,Van,Trailer,Pickup', required: false, display: true, order: 6 },
+                    { name: 'PF / Token', type: 'text', required: false, display: true, order: 7 },
+                    { name: 'Run from', type: 'text', required: false, display: true, order: 8 }
+                ];
+                localStorage.setItem('customFields', JSON.stringify(defaultFields));
+            }
+
+            // Generate dynamic form based on custom fields
+            generateDynamicForm();
+            
+            // Update table header and display vehicles
+            updateTableHeader();
+            if (typeof displayVehicles === 'function') {
+                displayVehicles();
+            }
+
+            console.log("Field customizer initialized");
+        });
+
+        // Field Customizer Modal Functions
+        function showFieldCustomizer() {
+            console.log("Opening field customizer");
+            // Get the modal
+            const modal = document.getElementById('fieldCustomizerModal');
+            if (!modal) {
+                console.error("Field customizer modal not found");
+                return;
+            }
+            
+            // Display the modal
+            modal.style.display = 'block';
+            
+            // Populate existing fields
+            populateExistingFields();
+        }
+        
+        function closeFieldCustomizer() {
+            console.log("Closing field customizer");
+            // Get the modal
+            const modal = document.getElementById('fieldCustomizerModal');
+            if (!modal) {
+                console.error("Field customizer modal not found");
+                return;
+            }
+            
+            // Hide the modal
+            modal.style.display = 'none';
+        }
+
+        function populateExistingFields() {
+            console.log("Populating existing fields");
+            const container = document.getElementById('existingFields');
+            if (!container) {
+                console.error("existingFields container not found");
+                return;
+            }
+            
+            // Get fields from localStorage
+            const fields = JSON.parse(localStorage.getItem('customFields')) || [];
+            
+            // Clear existing content
+            container.innerHTML = '';
+            
+            if (fields.length === 0) {
+                container.innerHTML = '<p>No fields configured.</p>';
+                return;
+            }
+            
+            // Create table to display fields
+            const table = document.createElement('table');
+            table.style.width = '100%';
+            table.style.borderCollapse = 'collapse';
+            table.style.marginBottom = '20px';
+            
+            // Create header row
+            const header = document.createElement('tr');
+            header.innerHTML = `
+                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #ddd;">Field Name</th>
+                <th style="text-align: left; padding: 8px; border-bottom: 1px solid #ddd;">Type</th>
+                <th style="text-align: center; padding: 8px; border-bottom: 1px solid #ddd;">Required</th>
+                <th style="text-align: center; padding: 8px; border-bottom: 1px solid #ddd;">Display</th>
+                <th style="text-align: center; padding: 8px; border-bottom: 1px solid #ddd;">Actions</th>
+            `;
+            table.appendChild(header);
+            
+            // Sort fields by order property
+            fields.sort((a, b) => a.order - b.order);
+            
+            // Add rows for each field
+            fields.forEach((field, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">${field.name}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">${field.type}</td>
+                    <td style="text-align: center; padding: 8px; border-bottom: 1px solid #ddd;">
+                        <input type="checkbox" ${field.required ? 'checked' : ''} data-index="${index}" data-property="required">
+                    </td>
+                    <td style="text-align: center; padding: 8px; border-bottom: 1px solid #ddd;">
+                        <input type="checkbox" ${field.display ? 'checked' : ''} data-index="${index}" data-property="display">
+                    </td>
+                    <td style="text-align: center; padding: 8px; border-bottom: 1px solid #ddd;">
+                        <button class="btn-sm btn-secondary move-up-btn" data-index="${index}" ${index === 0 ? 'disabled' : ''}>↑</button>
+                        <button class="btn-sm btn-secondary move-down-btn" data-index="${index}" ${index === fields.length - 1 ? 'disabled' : ''}>↓</button>
+                        <button class="btn-sm btn-danger remove-field-btn" data-index="${index}" ${['Vehicle No', 'Driver Name', 'Contact No', 'Capacity'].includes(field.name) ? 'disabled' : ''}>Remove</button>
+                    </td>
+                `;
+                table.appendChild(row);
+            });
+            
+            container.appendChild(table);
+            
+            // Add event listeners to the table elements
+            const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    const property = this.getAttribute('data-property');
+                    updateFieldProperty(index, property, this.checked);
+                });
+            });
+            
+            const moveUpButtons = container.querySelectorAll('.move-up-btn');
+            moveUpButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    moveField(index, -1);
+                });
+            });
+            
+            const moveDownButtons = container.querySelectorAll('.move-down-btn');
+            moveDownButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    moveField(index, 1);
+                });
+            });
+            
+            const removeButtons = container.querySelectorAll('.remove-field-btn');
+            removeButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    removeField(index);
+                });
+            });
+        }
+        
+        function updateFieldProperty(index, property, value) {
+            console.log(`Updating field property: index=${index}, property=${property}, value=${value}`);
+            // Get fields from localStorage
+            const fields = JSON.parse(localStorage.getItem('customFields')) || [];
+            
+            // Update the specified property
+            if (index >= 0 && index < fields.length) {
+                fields[index][property] = value;
+                
+                // Save back to localStorage
+                localStorage.setItem('customFields', JSON.stringify(fields));
+            }
+        }
+        
+        function moveField(index, direction) {
+            console.log(`Moving field: index=${index}, direction=${direction}`);
+            // Get fields from localStorage
+            const fields = JSON.parse(localStorage.getItem('customFields')) || [];
+            
+            // Check if move is valid
+            const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= fields.length) {
+                return;
+            }
+            
+            // Swap the fields
+            [fields[index], fields[newIndex]] = [fields[newIndex], fields[index]];
+            
+            // Update order values to match new positions
+            fields.forEach((field, i) => {
+                field.order = i + 1;
+            });
+            
+            // Save back to localStorage
+            localStorage.setItem('customFields', JSON.stringify(fields));
+            
+            // Refresh the display
+            populateExistingFields();
+        }
+        
+        function removeField(index) {
+            console.log(`Removing field: index=${index}`);
+            // Get fields from localStorage
+            const fields = JSON.parse(localStorage.getItem('customFields')) || [];
+            
+            // Check if field can be removed (core fields should not be removed)
+            if (index >= 0 && index < fields.length) {
+                const fieldName = fields[index].name;
+                if (['Vehicle No', 'Driver Name', 'Contact No', 'Capacity'].includes(fieldName)) {
+                    alert('Core fields cannot be removed.');
+                    return;
+                }
+                
+                // Confirm removal
+                if (!confirm(`Are you sure you want to remove the field "${fieldName}"?`)) {
+                    return;
+                }
+                
+                // Remove the field
+                fields.splice(index, 1);
+                
+                // Update order values
+                fields.forEach((field, i) => {
+                    field.order = i + 1;
+                });
+                
+                // Save back to localStorage
+                localStorage.setItem('customFields', JSON.stringify(fields));
+                
+                // Refresh the display
+                populateExistingFields();
+            }
+        }
+        
+        function addNewField() {
+            console.log("Adding new field");
+            // Get field details from the form
+            const name = document.getElementById('newFieldName').value.trim();
+            const type = document.getElementById('newFieldType').value;
+            const options = document.getElementById('newFieldOptions').value.trim();
+            const required = document.getElementById('newFieldRequired').checked;
+            const defaultValue = document.getElementById('newFieldDefault').value.trim();
+            
+            // Validate field name
+            if (!name) {
+                alert('Field name is required.');
+                return;
+            }
+            
+            // Get existing fields
+            const fields = JSON.parse(localStorage.getItem('customFields')) || [];
+            
+            // Check if field name already exists
+            if (fields.some(field => field.name === name)) {
+                alert('A field with this name already exists.');
+                return;
+            }
+            
+            // Validate options for dropdown type
+            if (type === 'select' && !options) {
+                alert('Options are required for dropdown fields.');
+                return;
+            }
+            
+            // Create new field object
+            const newField = {
+                name: name,
+                type: type,
+                options: type === 'select' ? options : '',
+                required: required,
+                display: true,
+                defaultValue: defaultValue,
+                order: fields.length + 1
+            };
+            
+            // Add to fields array
+            fields.push(newField);
+            
+            // Save to localStorage
+            localStorage.setItem('customFields', JSON.stringify(fields));
+            
+            // Clear the form
+            document.getElementById('newFieldName').value = '';
+            document.getElementById('newFieldType').value = 'text';
+            document.getElementById('newFieldOptions').value = '';
+            document.getElementById('newFieldRequired').checked = false;
+            document.getElementById('newFieldDefault').value = '';
+            
+            // Refresh the display
+            populateExistingFields();
+            
+            alert(`Field "${name}" has been added.`);
+        }
+        
+        function resetDefaultFields() {
+            console.log("Resetting to default fields");
+            if (!confirm('This will reset all fields to their default configuration. Any custom fields will be removed. Continue?')) {
+                return;
+            }
+            
+            // Default field configuration
+            const defaultFields = [
+                { name: 'Vehicle No', type: 'text', required: true, display: true, order: 1 },
+                { name: 'Driver Name', type: 'text', required: true, display: true, order: 2 },
+                { name: 'Contact No', type: 'text', required: true, display: true, order: 3 },
+                { name: 'Capacity', type: 'text', required: true, display: true, order: 4 },
+                { name: 'Status', type: 'select', options: 'Available,In Transit,Maintenance', required: false, display: true, order: 5 },
+                { name: 'Vehicle Type', type: 'select', options: 'Truck,Van,Trailer,Pickup', required: false, display: true, order: 6 },
+                { name: 'PF / Token', type: 'text', required: false, display: true, order: 7 },
+                { name: 'Run from', type: 'text', required: false, display: true, order: 8 }
+            ];
+            
+            // Save to localStorage
+            localStorage.setItem('customFields', JSON.stringify(defaultFields));
+            
+            // Refresh the display
+            populateExistingFields();
+            
+            alert('Fields have been reset to default configuration.');
+        }
+        
+        function saveFieldCustomization() {
+            console.log("Saving field customization");
+            // No need to save here as changes are saved immediately
+            alert('Field customization has been saved.');
+            closeFieldCustomizer();
+            
+            // Reload the page to apply changes to the form and table
+            location.reload();
+        }
+
+        // Function to show/hide the newFieldOptions field based on field type
+        function toggleOptionsField() {
+            const fieldType = document.getElementById('newFieldType').value;
+            const optionsContainer = document.querySelector('#newFieldOptions').parentNode;
+            
+            if (fieldType === 'select') {
+                optionsContainer.style.display = 'block';
+            } else {
+                optionsContainer.style.display = 'none';
+            }
+        }
+
+        // Function to set the active navigation button based on current page
+        function setActiveNavButton() {
+            const currentPage = window.location.pathname.split('/').pop();
+            const navButtons = document.querySelectorAll('.nav-button');
+            
+            navButtons.forEach(button => {
+                const buttonHref = button.getAttribute('href');
+                if (buttonHref === currentPage || 
+                    (currentPage === '' && buttonHref === 'index.html') ||
+                    (currentPage === 'vehicles.html' && buttonHref === 'vehicles.html')) {
+                    button.classList.add('active');
+                } else {
+                    button.classList.remove('active');
+                }
+            });
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up the field type change listener
+            const fieldTypeSelect = document.getElementById('newFieldType');
+            if (fieldTypeSelect) {
+                fieldTypeSelect.addEventListener('change', toggleOptionsField);
+                // Initial call to set the correct state
+                toggleOptionsField();
+            }
+        });
+    </script>
+    
+    <!-- Theme Manager Modal -->
+    <div id="themeManagerModal" class="modal">
+        <div class="modal-content" style="max-width: 600px; border-radius: 8px; padding: 0; overflow: hidden;">
+            <div style="background-color: var(--primary-color, #4CAF50); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="margin: 0; font-size: 18px;">Theme Settings</h2>
+                <span class="close" onclick="closeThemeManager()" style="color: white;">&times;</span>
+            </div>
+            
+            <!-- Chrome-like navigation sidebar -->
+            <div style="display: flex; height: 400px;">
+                <div style="width: 180px; background-color: #f8f9fa; border-right: 1px solid #ddd; overflow-y: auto;">
+                    <div class="settings-nav-item active-nav" onclick="showSettingsTab('appearance')" style="padding: 12px 16px; cursor: pointer; border-left: 3px solid transparent;" id="appearance-tab">
+                        <i class="fas fa-palette" style="margin-right: 10px;"></i> Appearance
+                    </div>
+                    <div class="settings-nav-item" onclick="showSettingsTab('transparency')" style="padding: 12px 16px; cursor: pointer; border-left: 3px solid transparent;" id="transparency-tab">
+                        <i class="fas fa-adjust" style="margin-right: 10px;"></i> Transparency
+                    </div>
+                    <div class="settings-nav-item" onclick="showSettingsTab('background')" style="padding: 12px 16px; cursor: pointer; border-left: 3px solid transparent;" id="background-tab">
+                        <i class="fas fa-image" style="margin-right: 10px;"></i> Login Background
+                    </div>
+                    <div class="settings-nav-item" onclick="showSettingsTab('layout')" style="padding: 12px 16px; cursor: pointer; border-left: 3px solid transparent;" id="layout-tab">
+                        <i class="fas fa-columns" style="margin-right: 10px;"></i> Layout
+                    </div>
+                </div>
+                
+                <!-- Settings content -->
+                <div style="flex: 1; padding: 20px; overflow-y: auto;">
+                    <!-- Appearance Tab -->
+                    <div class="settings-tab" id="appearance-content">
+                        <h3 style="margin-top: 0; color: #202124; font-size: 16px;">Color Theme</h3>
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
+                            <div onclick="setThemeColor('#4CAF50')" style="width: 35px; height: 35px; background-color: #4CAF50; border-radius: 50%; cursor: pointer; border: 2px solid transparent;" class="color-option"></div>
+                            <div onclick="setThemeColor('#2196F3')" style="width: 35px; height: 35px; background-color: #2196F3; border-radius: 50%; cursor: pointer; border: 2px solid transparent;" class="color-option"></div>
+                            <div onclick="setThemeColor('#F44336')" style="width: 35px; height: 35px; background-color: #F44336; border-radius: 50%; cursor: pointer; border: 2px solid transparent;" class="color-option"></div>
+                            <div onclick="setThemeColor('#9C27B0')" style="width: 35px; height: 35px; background-color: #9C27B0; border-radius: 50%; cursor: pointer; border: 2px solid transparent;" class="color-option"></div>
+                            <div onclick="setThemeColor('#FF9800')" style="width: 35px; height: 35px; background-color: #FF9800; border-radius: 50%; cursor: pointer; border: 2px solid transparent;" class="color-option"></div>
+                            <div onclick="setThemeColor('#607D8B')" style="width: 35px; height: 35px; background-color: #607D8B; border-radius: 50%; cursor: pointer; border: 2px solid transparent;" class="color-option"></div>
+                        </div>
+                        
+                        <div style="margin-top: 10px; display: flex; align-items: center; gap: 10px;">
+                            <label for="custom-color-picker" style="color: #5f6368; margin: 0; flex-shrink: 0;">Custom:</label>
+                            <input type="color" id="custom-color-picker" style="width: 40px; height: 30px; border: none; cursor: pointer;" onchange="setThemeColor(this.value)">
+                        </div>
+                        
+                        <h3 style="margin-top: 20px; color: #202124; font-size: 16px;">Page Background</h3>
+                        <div style="margin-bottom: 20px;">
+                            <p style="color: #5f6368; margin-bottom: 10px;">Choose a background for the application</p>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <select id="appBackgroundType" onchange="changeAppBackground(this.value)" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                                    <option value="default">Default (Solid Color)</option>
+                                    <option value="gradient1">Blue Gradient</option>
+                                    <option value="gradient2">Green Gradient</option>
+                                    <option value="pattern1">Pattern 1</option>
+                                    <option value="pattern2">Pattern 2</option>
+                                    <option value="custom">Custom Image</option>
+                                </select>
+                            </div>
+                            
+                            <div id="appCustomBackgroundOptions" style="display: none;">
+                                <button onclick="triggerAppBackgroundUpload()" style="padding: 8px 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px;">
+                                    <i class="fas fa-upload" style="margin-right: 5px;"></i> Upload Image
+                                </button>
+                                <span id="appBackgroundFileName" style="color: #5f6368; font-size: 14px;">No file selected</span>
+                                <input type="file" id="appBackgroundFileInput" style="display: none;" accept="image/*" onchange="handleAppBackgroundFileSelect(event)">
+                                
+                                <div style="margin-top: 15px;">
+                                    <label style="color: #5f6368; display: block; margin-bottom: 5px;">Background Fit:</label>
+                                    <select id="appBackgroundFit" onchange="changeAppBackgroundFit(this.value)" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                                        <option value="cover">Cover (Fill)</option>
+                                        <option value="contain">Contain (Fit)</option>
+                                        <option value="repeat">Repeat (Tile)</option>
+                                        <option value="center">Center</option>
+                                    </select>
+                                </div>
+                                
+                                <div style="margin-top: 15px; margin-bottom: 15px;">
+                                    <label style="color: #5f6368; display: block; margin-bottom: 5px;">Preview:</label>
+                                    <div id="appBackgroundPreview" style="width: 100%; height: 120px; border: 1px solid #ddd; border-radius: 4px; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center;">
+                                        <span style="color: #5f6368;">No custom background selected</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h3 style="margin-top: 20px; color: #202124; font-size: 16px;">Dark Mode</h3>
+                        <div style="display: flex; align-items: center; margin-top: 10px;">
+                            <label class="switch" style="position: relative; display: inline-block; width: 50px; height: 24px; margin-right: 10px;">
+                                <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()">
+                                <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
+                            </label>
+                            <span>Enable Dark Mode</span>
+                        </div>
+                        
+                        <h3 style="margin-top: 20px; color: #202124; font-size: 16px;">Navigation Text</h3>
+                        <div style="margin-bottom: 20px;">
+                            <p style="color: #5f6368; margin-bottom: 10px;">Adjust the font size of navigation elements</p>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                    <label for="nav-font-size-slider" style="color: #5f6368;">Font Size</label>
+                                    <span id="navFontSizeValue">14px</span>
+                                </div>
+                                <input type="range" id="navFontSizeSlider" min="10" max="20" value="14" class="slider" style="width: 100%;" oninput="setNavFontSize(this.value)">
+                                <div style="margin-top: 15px; display: flex; justify-content: space-between;">
+                                    <button onclick="setNavFontSize(12)" style="padding: 4px 8px; font-size: 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">Small</button>
+                                    <button onclick="setNavFontSize(14)" style="padding: 4px 8px; font-size: 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">Default</button>
+                                    <button onclick="setNavFontSize(16)" style="padding: 4px 8px; font-size: 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">Medium</button>
+                                    <button onclick="setNavFontSize(18)" style="padding: 4px 8px; font-size: 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">Large</button>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-top: 15px;">
+                                <label style="color: #5f6368; display: block; margin-bottom: 5px;">Preview:</label>
+                                <div id="navTextPreview" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #f8f9fa; font-size: 14px;">
+                                    <span>Welcome to Admin</span> | <a href="#" style="text-decoration: none;">Settings</a> | <a href="#" style="text-decoration: none;">Theme</a> | <a href="#" style="text-decoration: none;">Logout</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Transparency Tab -->
+                    <div class="settings-tab" id="transparency-content" style="display: none;">
+                        <h3 style="margin-top: 0; color: #202124; font-size: 16px;">Form Transparency</h3>
+                        <div style="margin-bottom: 20px;">
+                            <p style="color: #5f6368; margin-bottom: 10px;">Adjust the transparency of forms and panels</p>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                    <label for="form-transparency-slider" style="color: #5f6368;">Form Transparency</label>
+                                    <span id="formTransparencyValue">0%</span>
+                                </div>
+                                <input type="range" id="formTransparencySlider" min="0" max="30" value="0" class="slider" style="width: 100%;" oninput="setFormTransparency(this.value)">
+                                <div style="margin-top: 5px; display: flex; justify-content: space-between;">
+                                    <button onclick="setFormTransparency(0)" style="padding: 4px 8px; font-size: 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">Solid (0%)</button>
+                                    <button onclick="setFormTransparency(15)" style="padding: 4px 8px; font-size: 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">Medium (15%)</button>
+                                    <button onclick="setFormTransparency(30)" style="padding: 4px 8px; font-size: 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">High (30%)</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h3 style="margin-top: 20px; color: #202124; font-size: 16px;">Table Transparency</h3>
+                        <div style="margin-bottom: 20px;">
+                            <p style="color: #5f6368; margin-bottom: 10px;">Adjust the transparency of tables</p>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                    <label for="table-transparency-slider" style="color: #5f6368;">Table Transparency</label>
+                                    <span id="tableTransparencyValue">0%</span>
+                                </div>
+                                <input type="range" id="tableTransparencySlider" min="0" max="30" value="0" class="slider" style="width: 100%;" oninput="setTableTransparency(this.value)">
+                                <div style="margin-top: 5px; display: flex; justify-content: space-between;">
+                                    <button onclick="setTableTransparency(0)" style="padding: 4px 8px; font-size: 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">Solid (0%)</button>
+                                    <button onclick="setTableTransparency(15)" style="padding: 4px 8px; font-size: 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">Medium (15%)</button>
+                                    <button onclick="setTableTransparency(30)" style="padding: 4px 8px; font-size: 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">High (30%)</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h3 style="margin-top: 20px; color: #202124; font-size: 16px;">Login Page Background</h3>
+                        <div style="margin-bottom: 20px;">
+                            <p style="color: #5f6368; margin-bottom: 10px;">Adjust login page background transparency</p>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                    <label for="login-bg-transparency-slider" style="color: #5f6368;">Background Transparency</label>
+                                    <span id="loginBgTransparencyValue">50%</span>
+                                </div>
+                                <input type="range" id="loginBgTransparencySlider" min="0" max="100" value="50" class="slider" style="width: 100%;" oninput="setLoginBgTransparency(this.value)">
+                                <div style="margin-top: 5px; display: flex; justify-content: space-between;">
+                                    <button onclick="setLoginBgTransparency(0)" style="padding: 4px 8px; font-size: 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">Solid (0%)</button>
+                                    <button onclick="setLoginBgTransparency(50)" style="padding: 4px 8px; font-size: 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">Default (50%)</button>
+                                    <button onclick="setLoginBgTransparency(80)" style="padding: 4px 8px; font-size: 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">High (80%)</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h3 style="margin-top: 20px; color: #202124; font-size: 16px;">Login Card Transparency</h3>
+                        <div style="margin-bottom: 20px;">
+                            <p style="color: #5f6368; margin-bottom: 10px;">Adjust login card transparency</p>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                    <label for="login-card-transparency-slider" style="color: #5f6368;">Card Transparency</label>
+                                    <span id="loginCardTransparencyValue">50%</span>
+                                </div>
+                                <input type="range" id="loginCardTransparencySlider" min="0" max="100" value="50" class="slider" style="width: 100%;" oninput="setLoginCardTransparency(this.value)">
+                                <div style="margin-top: 5px; display: flex; justify-content: space-between;">
+                                    <button onclick="setLoginCardTransparency(0)" style="padding: 4px 8px; font-size: 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">Solid (0%)</button>
+                                    <button onclick="setLoginCardTransparency(50)" style="padding: 4px 8px; font-size: 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">Default (50%)</button>
+                                    <button onclick="setLoginCardTransparency(80)" style="padding: 4px 8px; font-size: 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">High (80%)</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 30px; border-top: 1px solid #dadce0; padding-top: 15px;">
+                            <button onclick="resetAllTransparency()" style="background-color: #f44336; color: white; border: none; border-radius: 4px; padding: 8px 15px; width: 100%; cursor: pointer; font-weight: bold;">Reset All Transparency</button>
+                            <p style="color: #5f6368; margin-top: 10px; font-size: 12px;">This will reset all transparency settings to their default values.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Login Page Tab -->
+                    <div class="settings-tab" id="login-page-content" style="display: none;">
+                        <h3 style="margin-top: 0; color: #202124; font-size: 16px;">Background Type</h3>
+                        <div style="margin-bottom: 20px;">
+                            <select id="loginBackgroundSelector" onchange="changeLoginBackground(this.value)" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                                <option value="default">Default</option>
+                                <option value="gradient1">Gradient 1 (Blue-Purple)</option>
+                                <option value="gradient2">Gradient 2 (Pink-Red)</option>
+                                <option value="gradient3">Gradient 3 (Green-Teal)</option>
+                                <option value="pattern1">Pattern 1</option>
+                                <option value="pattern2">Pattern 2</option>
+                                <option value="color">Custom Color</option>
+                                <option value="custom">Custom Image</option>
+                            </select>
+                        </div>
+                        
+                        <div id="customBackgroundOptions" style="display: none;">
+                            <h3 style="margin-top: 20px; color: #202124; font-size: 16px;">Custom Background</h3>
+                            
+                            <!-- Custom Image Upload -->
+                            <div style="margin-bottom: 15px;">
+                                <button onclick="triggerBackgroundUpload()" style="padding: 8px 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px;">
+                                    <i class="fas fa-upload" style="margin-right: 5px;"></i> Upload Image
+                                </button>
+                                <span id="backgroundFileName" style="color: #5f6368; font-size: 14px;">No file selected</span>
+                                <input type="file" id="backgroundFileInput" style="display: none;" accept="image/*" onchange="handleBackgroundFileSelect(event)">
+                            </div>
+                            
+                            <!-- Preview -->
+                            <div style="margin-top: 15px; margin-bottom: 15px;">
+                                <label style="color: #5f6368; display: block; margin-bottom: 5px;">Preview:</label>
+                                <div id="backgroundPreview" style="width: 100%; height: 120px; border: 1px solid #ddd; border-radius: 4px; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center;">
+                                    <span style="color: #5f6368;">No custom background selected</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Custom Color Background -->
+                        <div id="colorBackgroundOptions" style="display: none;">
+                            <h3 style="margin-top: 20px; color: #202124; font-size: 16px;">Background Color</h3>
+                            
+                            <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                                <input type="color" id="backgroundColorPicker" value="#f0f0f0" style="width: 50px; height: 40px; padding: 0; border: none;">
+                                <button onclick="applyBackgroundColor()" style="padding: 8px 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                    Apply Color
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Apply Custom Background button -->
+                        <div style="margin-top: 15px; margin-bottom: 20px;">
+                            <button onclick="saveAndApplyCustomBackground()" style="padding: 10px 15px; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold;">
+                                <i class="fas fa-save" style="margin-right: 8px;"></i> Save and Apply Custom Background
+                            </button>
+                            <p style="color: #5f6368; margin-top: 5px; font-size: 12px;">This will apply the currently selected background settings to the login page.</p>
+                        </div>
+                        
+                        <h3 style="margin-top: 20px; color: #202124; font-size: 16px;">Login Card Position</h3>
+                        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                            <button onclick="setLoginCardAlignment('left')" class="card-alignment-btn" data-alignment="left" style="flex: 1; padding: 8px 12px; background-color: #f1f3f4; color: #202124; border: 1px solid #dadce0; border-radius: 4px; cursor: pointer;">Left</button>
+                            <button onclick="setLoginCardAlignment('center')" class="card-alignment-btn" data-alignment="center" style="flex: 1; padding: 8px 12px; background-color: var(--primary-color); color: white; border: 1px solid var(--primary-color); border-radius: 4px; cursor: pointer;">Center</button>
+                            <button onclick="setLoginCardAlignment('right')" class="card-alignment-btn" data-alignment="right" style="flex: 1; padding: 8px 12px; background-color: #f1f3f4; color: #202124; border: 1px solid #dadce0; border-radius: 4px; cursor: pointer;">Right</button>
+                        </div>
+                        
+                        <h3 style="margin-top: 20px; color: #202124; font-size: 16px;">Login Card Size</h3>
+                        <div style="margin-bottom: 20px;">
+                            <select id="loginCardSizeSelector" onchange="setLoginCardSize(this.value)" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                                <option value="small">Small</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="large">Large</option>
+                            </select>
+                        </div>
+                        
+                        <div style="margin-top: 30px; border-top: 1px solid #dadce0; padding-top: 15px;">
+                            <button onclick="resetLoginPageSettings()" style="background-color: #f44336; color: white; border: none; border-radius: 4px; padding: 8px 15px; width: 100%; cursor: pointer; font-weight: bold;">
+                                <i class="fas fa-undo" style="margin-right: 5px;"></i> Reset Login Page Settings
+                            </button>
+                            <p style="color: #5f6368; margin-top: 10px; font-size: 12px;">This will reset all login page settings to their default values.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Background Tab -->
+                    <div class="settings-tab" id="background-content" style="display: none;">
+                        <div style="padding-top: 20px;">
+                            <h3 style="color: #202124; font-size: 16px; margin-bottom: 15px;">Login Background Setup</h3>
+                            
+                            <div style="background-color: #f8f9fa; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                                <h4 style="color: #202124; font-size: 14px; margin-bottom: 10px;">Upload Custom Background Image</h4>
+                                <p style="color: #5f6368; font-size: 14px; margin-bottom: 15px;">
+                                    Select an image to use as your login page background (max 5MB).
+                                </p>
+                                
+                                <div style="display: flex; flex-direction: column; gap: 15px;">
+                                    <button onclick="triggerLoginBackgroundUpload()" style="padding: 10px 15px; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                        <i class="fas fa-upload"></i> Upload Image
+                                    </button>
+                                    <input type="file" id="loginBackgroundUpload" style="display: none;" accept="image/*" onchange="handleLoginBackgroundUpload(event)">
+                                    
+                                    <div id="loginBackgroundPreview" style="width: 100%; height: 150px; border-radius: 4px; border: 1px dashed #ccc; display: flex; align-items: center; justify-content: center; background-size: cover; background-position: center;">
+                                        <span id="previewText" style="color: #5f6368;">No custom background selected</span>
+                                    </div>
+                                    
+                                    <select id="loginBackgroundFit" onchange="changeLoginBackgroundFit(this.value)" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                                        <option value="fill">Fill (Cover)</option>
+                                        <option value="fit">Fit (Contain)</option>
+                                        <option value="stretch">Stretch</option>
+                                        <option value="center">Center</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-top: 30px; border-top: 1px solid #e0e0e0; padding-top: 20px;">
+                                <h4 style="color: #202124; font-size: 14px; margin-bottom: 15px;">Advanced Login Theme Options</h4>
+                                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                                    <button onclick="openLoginThemeManager()" style="flex: 1; padding: 12px 15px; background-color: #f5f5f5; color: #333; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 500; transition: all 0.2s ease;">
+                                        <i class="fas fa-palette" style="font-size: 16px;"></i>
+                                        Open Full Login Theme Manager
+                                        <i class="fas fa-external-link-alt" style="font-size: 14px; margin-left: auto;"></i>
+                                    </button>
+                                    <button onclick="toggleLoginThemeIcon()" style="width: 50px; height: 50px; background-color: var(--primary-color); color: white; border: none; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); transition: transform 0.3s ease; cursor: pointer;" title="Toggle theme icon visibility on login page">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <p style="color: #5f6368; font-size: 12px; text-align: right; margin-top: 5px;">
+                                    <i class="fas fa-info-circle" style="margin-right: 5px;"></i> Toggle theme icon visibility on login page
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Layout Tab -->
+                    <div class="settings-tab" id="layout-content" style="display: none;">
+                        <h3 style="margin-top: 0; color: #202124; font-size: 16px;">UI Density</h3>
+                        <div style="margin-bottom: 20px;">
+                            <p style="color: #5f6368; margin-bottom: 10px;">Adjust the spacing and padding of UI elements</p>
+                            
+                            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                <button onclick="setUIDensity('compact')" class="density-button" style="flex: 1; padding: 8px 12px; background-color: #f1f3f4; color: #202124; border: 1px solid #dadce0; border-radius: 4px; cursor: pointer;">Compact</button>
+                                <button onclick="setUIDensity('default')" class="density-button selected" style="flex: 1; padding: 8px 12px; background-color: var(--primary-color); color: white; border: 1px solid var(--primary-color); border-radius: 4px; cursor: pointer;">Default</button>
+                                <button onclick="setUIDensity('comfortable')" class="density-button" style="flex: 1; padding: 8px 12px; background-color: #f1f3f4; color: #202124; border: 1px solid #dadce0; border-radius: 4px; cursor: pointer;">Comfortable</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Theme Management Script -->
+    <script>
+        // Theme Management Functions
+        function showThemeManager() {
+            const themeManagerModal = document.getElementById('themeManagerModal');
+            if (themeManagerModal) {
+                themeManagerModal.style.display = 'block';
+                
+                // Initialize settings from localStorage
+                const themeColor = localStorage.getItem('themeColor');
+                if (themeColor) {
+                    // Update color options to show which is selected
+                    document.querySelectorAll('.color-option').forEach(option => {
+                        const optionColor = window.getComputedStyle(option).backgroundColor;
+                        const hexColor = rgbToHex(optionColor);
+                        if (hexColor.toUpperCase() === themeColor.toUpperCase()) {
+                            option.style.border = '2px solid #333';
+                        } else {
+                            option.style.border = '2px solid transparent';
+                        }
+                    });
+                    
+                    // Update custom color picker
+                    const customPicker = document.getElementById('custom-color-picker');
+                    if (customPicker) customPicker.value = themeColor;
+                }
+                
+                // Initialize dark mode toggle
+                const darkModeToggle = document.getElementById('darkModeToggle');
+                if (darkModeToggle) {
+                    darkModeToggle.checked = document.body.classList.contains('dark-mode');
+                }
+                
+                // Initialize UI density selection
+                const uiDensity = localStorage.getItem('uiDensity') || 'default';
+                document.querySelectorAll('.density-button').forEach(button => {
+                    const densityValue = button.textContent.toLowerCase();
+                    if (densityValue === uiDensity) {
+                        button.style.backgroundColor = 'var(--primary-color)';
+                        button.style.color = 'white';
+                        button.style.borderColor = 'var(--primary-color)';
+                    } else {
+                        button.style.backgroundColor = '#f1f3f4';
+                        button.style.color = '#202124';
+                        button.style.borderColor = '#dadce0';
+                    }
+                });
+                
+                // Show appearance tab by default
+                showSettingsTab('appearance');
+            } else {
+                console.error('Theme Manager Modal not found');
+            }
+        }
+        
+        function closeThemeManager() {
+            const themeManagerModal = document.getElementById('themeManagerModal');
+            if (themeManagerModal) {
+                themeManagerModal.style.display = 'none';
+            }
+        }
+        
+        function showSettingsTab(tab) {
+            // Show selected tab content
+            const tabs = document.querySelectorAll('.settings-tab');
+            tabs.forEach(t => t.style.display = 'none');
+            const selectedTab = document.getElementById(`${tab}-content`);
+            if (selectedTab) {
+                selectedTab.style.display = 'block';
+            }
+            
+            // Update navigation highlights
+            const navItems = document.querySelectorAll('.settings-nav-item');
+            navItems.forEach(item => {
+                item.classList.remove('active-nav');
+                item.style.borderLeftColor = 'transparent';
+                item.style.color = '#5f6368';
+            });
+            
+            // Add active class to selected nav item
+            const selectedNavItem = document.getElementById(`${tab}-tab`);
+            if (selectedNavItem) {
+                selectedNavItem.classList.add('active-nav');
+                
+                // Apply theme color to active nav item
+                const themeColor = localStorage.getItem('themeColor') || '#4CAF50';
+                selectedNavItem.style.borderLeftColor = themeColor;
+                selectedNavItem.style.color = themeColor;
+            }
+            
+            // If on background tab, manage specialized controls
+            if (tab === 'background') {
+                // Get current background type
+                const backgroundSelector = document.getElementById('backgroundSelector');
+                if (backgroundSelector) {
+                    const backgroundType = backgroundSelector.value;
+                    toggleCustomBackgroundOptions(backgroundType);
+                    toggleSlideshowControls(backgroundType === 'slideshow');
+                }
+            }
+            
+            console.log(`Switched to ${tab} tab`);
+        }
+        
+        function setThemeColor(color) {
+            // Update CSS variables
+            document.documentElement.style.setProperty('--primary-color', color);
+            
+            // Calculate and set secondary color (darker version of primary)
+            const secondaryColor = adjustColorBrightness(color, -20);
+            document.documentElement.style.setProperty('--secondary-color', secondaryColor);
+            
+            // Save to localStorage
+            localStorage.setItem('themeColor', color);
+            
+            // Update color options to show which is selected
+            document.querySelectorAll('.color-option').forEach(option => {
+                const optionColor = window.getComputedStyle(option).backgroundColor;
+                const hexColor = rgbToHex(optionColor);
+                
+                if (hexColor.toUpperCase() === color.toUpperCase()) {
+                    option.style.border = '2px solid #333';
+                } else {
+                    option.style.border = '2px solid transparent';
+                }
+            });
+            
+            // Update active navigation item
+            const activeNavItem = document.querySelector('.settings-nav-item.active-nav');
+            if (activeNavItem) {
+                activeNavItem.style.borderLeftColor = color;
+                activeNavItem.style.color = color;
+            }
+        }
+        
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+        }
+        
+        function setUIDensity(density) {
+            // Remove existing density classes
+            document.body.classList.remove('ui-compact', 'ui-default', 'ui-comfortable');
+            
+            // Add the selected density class
+            document.body.classList.add(`ui-${density}`);
+            
+            // Save to localStorage
+            localStorage.setItem('uiDensity', density);
+            
+            // Update density buttons
+            document.querySelectorAll('.density-button').forEach(button => {
+                const buttonDensity = button.textContent.toLowerCase();
+                if (buttonDensity === density) {
+                    button.style.backgroundColor = 'var(--primary-color)';
+                    button.style.color = 'white';
+                    button.style.borderColor = 'var(--primary-color)';
+                } else {
+                    button.style.backgroundColor = '#f1f3f4';
+                    button.style.color = '#202124';
+                    button.style.borderColor = '#dadce0';
+                }
+            });
+        }
+        
+        // Transparency Functions
+        function setFormTransparency(value) {
+            // Update the displayed value
+            const valueDisplay = document.getElementById('formTransparencyValue');
+            if (valueDisplay) {
+                valueDisplay.textContent = value + '%';
+            }
+            
+            // Calculate the alpha value (0-1 range)
+            const alpha = 1 - (value / 100);
+            
+            // Get the current background color
+            const bgColor = window.getComputedStyle(document.documentElement).getPropertyValue('--form-bg').trim();
+            
+            // If it's an rgba value, update it; otherwise, convert from hex/rgb to rgba
+            let newBgColor;
+            if (bgColor.startsWith('rgba')) {
+                // Replace the alpha value in the existing rgba
+                newBgColor = bgColor.replace(/rgba\([^,]+,[^,]+,[^,]+,\s*[\d.]+\)/, `rgba(255, 255, 255, ${alpha})`);
+            } else {
+                // Create a new rgba value
+                newBgColor = `rgba(255, 255, 255, ${alpha})`;
+            }
+            
+            // Apply to form containers
+            document.documentElement.style.setProperty('--form-bg', newBgColor);
+            
+            // Save to localStorage
+            localStorage.setItem('formTransparency', value);
+        }
+        
+        function setTableTransparency(value) {
+            // Update the displayed value
+            const valueDisplay = document.getElementById('tableTransparencyValue');
+            if (valueDisplay) {
+                valueDisplay.textContent = value + '%';
+            }
+            
+            // Calculate the alpha value (0-1 range)
+            const alpha = 1 - (value / 100);
+            
+            // Apply to table backgrounds
+            document.querySelectorAll('.table-container').forEach(table => {
+                table.style.backgroundColor = `rgba(255, 255, 255, ${alpha})`;
+            });
+            
+            // Save to localStorage
+            localStorage.setItem('tableTransparency', value);
+        }
+        
+        // Function to show/hide custom background options based on background type
+        function toggleCustomBackgroundOptions(backgroundType) {
+            const customOptions = document.getElementById('customBackgroundOptions');
+            if (customOptions) {
+                if (backgroundType === 'custom' || backgroundType === 'color') {
+                    customOptions.style.display = 'block';
+                } else {
+                    customOptions.style.display = 'none';
+                }
+            }
+        }
+        
+        // Function to toggle slideshow controls visibility
+        function toggleSlideshowControls(show) {
+            const slideshowControls = document.querySelector('.slideshow-controls');
+            if (slideshowControls) {
+                slideshowControls.style.display = show ? 'block' : 'none';
+            }
+        }
+        
+        function resetAllTransparency() {
+            // Reset form transparency
+            setFormTransparency(0);
+            
+            // Reset table transparency
+            setTableTransparency(0);
+            
+            // Reset login background transparency
+            setLoginBgTransparency(50);
+            
+            // Reset login card transparency
+            setLoginCardTransparency(50);
+            
+            // Reset the sliders
+            const formSlider = document.getElementById('formTransparencySlider');
+            if (formSlider) formSlider.value = 0;
+            
+            const tableSlider = document.getElementById('tableTransparencySlider');
+            if (tableSlider) tableSlider.value = 0;
+            
+            const loginBgSlider = document.getElementById('loginBgTransparencySlider');
+            if (loginBgSlider) loginBgSlider.value = 50;
+            
+            const loginCardSlider = document.getElementById('loginCardTransparencySlider');
+            if (loginCardSlider) loginCardSlider.value = 50;
+            
+            alert('All transparency settings have been reset to default.');
+        }
+        
+        function applyBackground(type) {
+            try {
+                // Show/hide custom background options based on type
+                toggleCustomBackgroundOptions(type);
+                
+                // Update the background selector if it exists
+                const backgroundSelector = document.getElementById('backgroundSelector');
+                if (backgroundSelector) {
+                    backgroundSelector.value = type;
+                }
+                
+                // First stop any running slideshow
+                stopSlideshow();
+                
+                // Clear any previous background
+                document.body.style.backgroundImage = '';
+                document.body.style.backgroundColor = 'var(--background-color)';
+                
+                // Remove any existing background elements
+                const existingBg = document.getElementById('custom-background');
+                if (existingBg) {
+                    existingBg.remove();
+                }
+                
+                // Store the background type
+                localStorage.setItem('loginBackground', type);
+                
+                // Apply the selected background
+                switch(type) {
+                    case 'gradient1':
+                        document.body.style.backgroundImage = 'linear-gradient(135deg, #667eea, #764ba2)';
+                        break;
+                    case 'gradient2':
+                        document.body.style.backgroundImage = 'linear-gradient(135deg, #f093fb, #f5576c)';
+                        break;
+                    case 'gradient3':
+                        document.body.style.backgroundImage = 'linear-gradient(135deg, #43e97b, #38f9d7)';
+                        break;
+                    case 'pattern1':
+                        document.body.style.backgroundImage = "url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjZmZmIj48L3JlY3Q+CjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNjY2MiPjwvcmVjdD4KPC9zdmc+')";
+                        document.body.style.backgroundColor = "#f5f5f5";
+                        break;
+                    case 'pattern2':
+                        document.body.style.backgroundImage = "url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+CjxyZWN0IHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0iI2ZmZiI+PC9yZWN0Pgo8Y2lyY2xlIGN4PSIxMCIgY3k9IjEwIiByPSIyIiBmaWxsPSIjZWVlIj48L2NpcmNsZT4KPC9zdmc+')";
+                        document.body.style.backgroundColor = "#ffffff";
+                        break;
+                    case 'slideshow':
+                        // Start the slideshow
+                        startSlideshow();
+                        break;
+                    case 'color':
+                        // Apply custom background color
+                        const bgColor = localStorage.getItem('loginBackgroundColor');
+                        if (bgColor) {
+                            document.body.style.backgroundColor = bgColor;
+                        }
+                        break;
+                    case 'custom':
+                        // Apply custom background image
+                        const customBg = localStorage.getItem('loginCustomBackground');
+                        if (customBg) {
+                            // Create a background div to handle the custom image properly
+                            const bgDiv = document.createElement('div');
+                            bgDiv.id = 'custom-background';
+                            bgDiv.style.position = 'fixed';
+                            bgDiv.style.top = '0';
+                            bgDiv.style.left = '0';
+                            bgDiv.style.width = '100vw';
+                            bgDiv.style.height = '100vh';
+                            bgDiv.style.backgroundImage = `url(${customBg})`;
+                            
+                            // Apply background fit style
+                            const fitStyle = localStorage.getItem('loginBackgroundFit') || 'fill';
+                            switch(fitStyle) {
+                                case 'fill':
+                                    bgDiv.style.backgroundSize = 'cover';
+                                    bgDiv.style.backgroundPosition = 'center';
+                                    break;
+                                case 'fit':
+                                    bgDiv.style.backgroundSize = 'contain';
+                                    bgDiv.style.backgroundPosition = 'center';
+                                    break;
+                                case 'stretch':
+                                    bgDiv.style.backgroundSize = '100% 100%';
+                                    break;
+                                case 'center':
+                                    bgDiv.style.backgroundSize = 'auto';
+                                    break;
+                                default:
+                                    bgDiv.style.backgroundSize = 'cover';
+                            }
+                            
+                            bgDiv.style.backgroundRepeat = 'no-repeat';
+                            bgDiv.style.zIndex = '-2';
+                            document.body.appendChild(bgDiv);
+                            
+                            console.log("Custom background applied via applyBackground function");
+                        } else {
+                            console.error("Custom background requested but no image data found in localStorage");
+                        }
+                        break;
+                    default:
+                        // Default background
+                        document.body.style.backgroundColor = 'var(--background-color)';
+                        break;
+                }
+                
+                // Apply transparency
+                const transparency = localStorage.getItem('loginTransparency') || '70';
+                setTransparency(transparency);
+                
+                // Toggle slideshow controls visibility based on the selected background type
+                toggleSlideshowControls(type === 'slideshow');
+                
+                console.log("Background applied:", type);
+                
+            } catch (e) {
+                console.error('Error applying background:', e);
+            }
+        }
+        
+        // Login Page Transparency Functions
+        function setLoginBgTransparency(value) {
+            // Update the displayed value
+            const valueDisplay = document.getElementById('loginBgTransparencyValue');
+            if (valueDisplay) {
+                valueDisplay.textContent = value + '%';
+            }
+            
+            // Save to localStorage - will be applied when login page loads
+            localStorage.setItem('loginTransparency', value);
+        }
+        
+        function setLoginCardTransparency(value) {
+            // Update the displayed value
+            const valueDisplay = document.getElementById('loginCardTransparencyValue');
+            if (valueDisplay) {
+                valueDisplay.textContent = value + '%';
+            }
+            
+            // Save to localStorage - will be applied when login page loads
+            localStorage.setItem('loginCardTransparency', value);
+        }
+        
+        // Login Page Background Functions
+        function changeLoginBackground(type) {
+            // Save the background type
+            localStorage.setItem('loginBackground', type);
+            
+            // Show/hide appropriate customization options
+            toggleCustomBackgroundOptions(type);
+        }
+        
+        // Function to show/hide custom background options based on background type
+        function toggleCustomBackgroundOptions(type) {
+            // Handle custom background options
+            const customBgOptions = document.getElementById('customBackgroundOptions');
+            if (customBgOptions) {
+                customBgOptions.style.display = type === 'custom' ? 'block' : 'none';
+            }
+            
+            // Handle custom color options
+            const colorBgOptions = document.getElementById('colorBackgroundOptions');
+            if (colorBgOptions) {
+                colorBgOptions.style.display = type === 'color' ? 'block' : 'none';
+            }
+        }
+        
+        // App Background Functions
+        function changeAppBackground(type) {
+            // Save the background type
+            localStorage.setItem('appBackground', type);
+            
+            // Show/hide custom background options
+            const customOptions = document.getElementById('appCustomBackgroundOptions');
+            if (customOptions) {
+                customOptions.style.display = type === 'custom' ? 'block' : 'none';
+            }
+            
+            // Apply the background immediately
+            applyAppBackground(type);
+        }
+        
+        function applyAppBackground(type) {
+            // Remove any existing background classes
+            document.body.classList.remove('bg-gradient1', 'bg-gradient2', 'bg-pattern1', 'bg-pattern2');
+            
+            // Reset custom background
+            document.body.style.backgroundImage = '';
+            document.body.style.backgroundColor = '';
+            
+            // Apply the selected background
+            switch (type) {
+                case 'gradient1':
+                    document.body.style.background = 'linear-gradient(135deg, #2196F3, #3F51B5)';
+                    break;
+                case 'gradient2':
+                    document.body.style.background = 'linear-gradient(135deg, #4CAF50, #009688)';
+                    break;
+                case 'pattern1':
+                    document.body.style.backgroundImage = 'url("data:image/svg+xml,%3Csvg width=\'20\' height=\'20\' viewBox=\'0 0 20 20\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%239C92AC\' fill-opacity=\'0.2\' fill-rule=\'evenodd\'%3E%3Ccircle cx=\'3\' cy=\'3\' r=\'3\'/%3E%3Ccircle cx=\'13\' cy=\'13\' r=\'3\'/%3E%3C/g%3E%3C/svg%3E")';
+                    break;
+                case 'pattern2':
+                    document.body.style.backgroundImage = 'url("data:image/svg+xml,%3Csvg width=\'40\' height=\'40\' viewBox=\'0 0 40 40\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%234CAF50\' fill-opacity=\'0.1\' fill-rule=\'evenodd\'%3E%3Cpath d=\'M0 40L40 0H20L0 20M40 40V20L20 40\'/%3E%3C/g%3E%3C/svg%3E")';
+                    break;
+                case 'custom':
+                    // Apply custom background if available
+                    const customBackground = localStorage.getItem('appCustomBackground');
+                    const fit = localStorage.getItem('appBackgroundFit') || 'cover';
+                    
+                    if (customBackground) {
+                        document.body.style.backgroundImage = `url(${customBackground})`;
+                        document.body.style.backgroundSize = fit;
+                        document.body.style.backgroundRepeat = fit === 'repeat' ? 'repeat' : 'no-repeat';
+                        document.body.style.backgroundPosition = 'center';
+                    }
+                    break;
+                default:
+                    // Default to original background
+                    document.body.style.backgroundColor = 'var(--background-color)';
+                    break;
+            }
+        }
+        
+        function triggerAppBackgroundUpload() {
+            const fileInput = document.getElementById('appBackgroundFileInput');
+            if (fileInput) {
+                fileInput.click();
+            }
+        }
+        
+        function handleAppBackgroundFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // Update file name display
+            const fileNameElement = document.getElementById('appBackgroundFileName');
+            if (fileNameElement) {
+                fileNameElement.textContent = file.name;
+            }
+            
+            // Read the file and show preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // Save to localStorage
+                localStorage.setItem('appCustomBackground', e.target.result);
+                
+                // Update preview
+                const preview = document.getElementById('appBackgroundPreview');
+                if (preview) {
+                    preview.style.backgroundImage = `url(${e.target.result})`;
+                    preview.innerHTML = '';
+                    
+                    // Apply the background fit to the preview
+                    const fit = localStorage.getItem('appBackgroundFit') || 'cover';
+                    preview.style.backgroundSize = fit;
+                    preview.style.backgroundRepeat = fit === 'repeat' ? 'repeat' : 'no-repeat';
+                    preview.style.backgroundPosition = 'center';
+                }
+                
+                // Apply the background to the page
+                applyAppBackground('custom');
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function changeAppBackgroundFit(fit) {
+            // Save the fit setting
+            localStorage.setItem('appBackgroundFit', fit);
+            
+            // Update the preview
+            const preview = document.getElementById('appBackgroundPreview');
+            if (preview) {
+                preview.style.backgroundSize = fit;
+                preview.style.backgroundRepeat = fit === 'repeat' ? 'repeat' : 'no-repeat';
+                preview.style.backgroundPosition = 'center';
+            }
+            
+            // Apply to the actual background if custom is selected
+            const backgroundType = localStorage.getItem('appBackground');
+            if (backgroundType === 'custom') {
+                applyAppBackground('custom');
+            }
+        }
+        
+        // Navigation Font Size Functions
+        function setNavFontSize(size) {
+            // Convert to integer to ensure we're working with a number
+            size = parseInt(size);
+            
+            // Update the display
+            const valueDisplay = document.getElementById('navFontSizeValue');
+            if (valueDisplay) {
+                valueDisplay.textContent = size + 'px';
+            }
+            
+            // Update the preview
+            const preview = document.getElementById('navTextPreview');
+            if (preview) {
+                preview.style.fontSize = size + 'px';
+            }
+            
+            // Apply to actual navigation elements
+            const userInfo = document.querySelector('.user-info');
+            if (userInfo) {
+                userInfo.style.fontSize = size + 'px';
+            }
+            
+            // Apply to any other navigation elements
+            document.querySelectorAll('.nav-button, .user-actions a').forEach(el => {
+                el.style.fontSize = size + 'px';
+            });
+            
+            // Save to localStorage
+            localStorage.setItem('navFontSize', size);
+            
+            // Update the slider value
+            const slider = document.getElementById('navFontSizeSlider');
+            if (slider && slider.value != size) {
+                slider.value = size;
+            }
+        }
+        
+        function toggleCustomBackgroundOptions(type) {
+            // Handle custom background options
+            const customBgOptions = document.getElementById('customBackgroundOptions');
+            if (customBgOptions) {
+                customBgOptions.style.display = type === 'custom' ? 'block' : 'none';
+            }
+            
+            // Handle custom color options
+            const colorBgOptions = document.getElementById('colorBackgroundOptions');
+            if (colorBgOptions) {
+                colorBgOptions.style.display = type === 'color' ? 'block' : 'none';
+            }
+        }
+        
+        function triggerBackgroundUpload() {
+            const fileInput = document.getElementById('backgroundFileInput');
+            if (fileInput) {
+                fileInput.click();
+            }
+        }
+        
+        function handleBackgroundFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // Update file name display
+            const fileNameElement = document.getElementById('backgroundFileName');
+            if (fileNameElement) {
+                fileNameElement.textContent = file.name;
+            }
+            
+            // Read the file and show preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imageData = e.target.result;
+                
+                // Save to localStorage
+                localStorage.setItem('customLoginBackground', imageData);
+                
+                // Update preview
+                const preview = document.getElementById('backgroundPreview');
+                if (preview) {
+                    preview.style.backgroundImage = `url(${imageData})`;
+                    preview.innerHTML = '';
+                }
+                
+                // Make sure we've set login background type to custom
+                localStorage.setItem('loginBackground', 'custom');
+                
+                // Update background selector if it exists
+                const backgroundSelector = document.getElementById('loginBackgroundSelector');
+                if (backgroundSelector) {
+                    backgroundSelector.value = 'custom';
+                }
+                
+                console.log("Custom login background saved successfully");
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function applyBackgroundColor() {
+            const colorPicker = document.getElementById('backgroundColorPicker');
+            if (colorPicker) {
+                const color = colorPicker.value;
+                localStorage.setItem('loginBackgroundColor', color);
+                // Also set the background type to 'color' so it will be applied on the login page
+                localStorage.setItem('loginBackground', 'color');
+                
+                // Give visual feedback
+                alert('Background color has been saved. Use "Save and Apply Custom Background" to apply it to the login page.');
+            }
+        }
+        
+        function setLoginCardAlignment(alignment) {
+            // Save to localStorage
+            localStorage.setItem('loginCardAlignment', alignment);
+            
+            // Update UI
+            document.querySelectorAll('.card-alignment-btn').forEach(btn => {
+                const btnAlignment = btn.getAttribute('data-alignment');
+                if (btnAlignment === alignment) {
+                    btn.style.backgroundColor = 'var(--primary-color)';
+                    btn.style.color = 'white';
+                    btn.style.borderColor = 'var(--primary-color)';
+                } else {
+                    btn.style.backgroundColor = '#f1f3f4';
+                    btn.style.color = '#202124';
+                    btn.style.borderColor = '#dadce0';
+                }
+            });
+        }
+        
+        function setLoginCardSize(size) {
+            // Save to localStorage
+            localStorage.setItem('loginCardSize', size);
+        }
+        
+        function resetLoginPageSettings() {
+            if (confirm('Are you sure you want to reset all login page settings?')) {
+                // Reset background type
+                localStorage.removeItem('loginBackground');
+                localStorage.removeItem('customLoginBackground');
+                localStorage.removeItem('loginBackgroundColor');
+                
+                // Reset card position
+                localStorage.setItem('loginCardAlignment', 'center');
+                
+                // Reset card size
+                localStorage.setItem('loginCardSize', 'medium');
+                
+                // Reset transparency sliders in the transparency tab
+                localStorage.setItem('loginTransparency', '50');
+                localStorage.setItem('loginCardTransparency', '50');
+                
+                // Update UI
+                const backgroundSelector = document.getElementById('loginBackgroundSelector');
+                if (backgroundSelector) backgroundSelector.value = 'default';
+                
+                const cardSizeSelector = document.getElementById('loginCardSizeSelector');
+                if (cardSizeSelector) cardSizeSelector.value = 'medium';
+                
+                // Update alignment buttons
+                setLoginCardAlignment('center');
+                
+                // Hide custom options
+                toggleCustomBackgroundOptions('default');
+                
+                // Update sliders in transparency tab
+                const loginBgSlider = document.getElementById('loginBgTransparencySlider');
+                if (loginBgSlider) loginBgSlider.value = 50;
+                
+                const loginCardSlider = document.getElementById('loginCardTransparencySlider');
+                if (loginCardSlider) loginCardSlider.value = 50;
+                
+                const loginBgValue = document.getElementById('loginBgTransparencyValue');
+                if (loginBgValue) loginBgValue.textContent = '50%';
+                
+                const loginCardValue = document.getElementById('loginCardTransparencyValue');
+                if (loginCardValue) loginCardValue.textContent = '50%';
+                
+                // Reset preview
+                const preview = document.getElementById('backgroundPreview');
+                if (preview) {
+                    preview.style.backgroundImage = '';
+                    preview.innerHTML = '<span style="color: #5f6368;">No custom background selected</span>';
+                }
+                
+                // Reset filename display
+                const fileNameElement = document.getElementById('backgroundFileName');
+                if (fileNameElement) {
+                    fileNameElement.textContent = 'No file selected';
+                }
+                
+                alert('Login page settings have been reset to defaults.');
+            }
+        }
+        
+        // Helper function to adjust color brightness
+        function adjustColorBrightness(hex, percent) {
+            // Convert hex to RGB
+            let r = parseInt(hex.substring(1, 3), 16);
+            let g = parseInt(hex.substring(3, 5), 16);
+            let b = parseInt(hex.substring(5, 7), 16);
+            
+            // Adjust brightness
+            r = Math.max(0, Math.min(255, r + percent));
+            g = Math.max(0, Math.min(255, g + percent));
+            b = Math.max(0, Math.min(255, b + percent));
+            
+            // Convert back to hex
+            return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+        }
+        
+        // Helper function to convert RGB to Hex
+        function rgbToHex(rgb) {
+            if (!rgb) return '#000000';
+            
+            // Check if already hex
+            if (rgb.startsWith('#')) return rgb;
+            
+            // Extract RGB values
+            const rgbArray = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+            if (!rgbArray) return rgb; // Return original if not RGB format
+            
+            // Convert to hex
+            function hex(x) {
+                return ("0" + parseInt(x).toString(16)).slice(-2);
+            }
+            return "#" + hex(rgbArray[1]) + hex(rgbArray[2]) + hex(rgbArray[3]);
+        }
+        
+        // Apply saved settings on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Apply saved theme color
+            const themeColor = localStorage.getItem('themeColor');
+            if (themeColor) {
+                document.documentElement.style.setProperty('--primary-color', themeColor);
+                document.documentElement.style.setProperty('--secondary-color', adjustColorBrightness(themeColor, -20));
+            }
+            
+            // Apply dark mode if enabled
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.body.classList.add('dark-mode');
+            }
+            
+            // Apply UI density
+            const uiDensity = localStorage.getItem('uiDensity') || 'default';
+            document.body.classList.add(`ui-${uiDensity}`);
+            
+            // Apply form transparency settings
+            const formTransparency = localStorage.getItem('formTransparency');
+            if (formTransparency) {
+                setFormTransparency(formTransparency);
+                const formSlider = document.getElementById('formTransparencySlider');
+                if (formSlider) formSlider.value = formTransparency;
+            }
+            
+            // Apply table transparency settings
+            const tableTransparency = localStorage.getItem('tableTransparency');
+            if (tableTransparency) {
+                setTableTransparency(tableTransparency);
+                const tableSlider = document.getElementById('tableTransparencySlider');
+                if (tableSlider) tableSlider.value = tableTransparency;
+            }
+            
+            // Initialize login transparency sliders
+            const loginBgTransparency = localStorage.getItem('loginTransparency') || '50';
+            const loginBgSlider = document.getElementById('loginBgTransparencySlider');
+            const loginBgValue = document.getElementById('loginBgTransparencyValue');
+            if (loginBgSlider) loginBgSlider.value = loginBgTransparency;
+            if (loginBgValue) loginBgValue.textContent = loginBgTransparency + '%';
+            
+            // Initialize login card transparency slider
+            const loginCardTransparency = localStorage.getItem('loginCardTransparency') || '50';
+            const loginCardSlider = document.getElementById('loginCardTransparencySlider');
+            const loginCardValue = document.getElementById('loginCardTransparencyValue');
+            if (loginCardSlider) loginCardSlider.value = loginCardTransparency;
+            if (loginCardValue) loginCardValue.textContent = loginCardTransparency + '%';
+            
+            // Initialize login page background settings
+            const backgroundType = localStorage.getItem('loginBackground') || 'default';
+            const backgroundSelector = document.getElementById('loginBackgroundSelector');
+            if (backgroundSelector) {
+                backgroundSelector.value = backgroundType;
+                toggleCustomBackgroundOptions(backgroundType);
+            }
+            
+            // Initialize card alignment buttons
+            const cardAlignment = localStorage.getItem('loginCardAlignment') || 'center';
+            setLoginCardAlignment(cardAlignment);
+            
+            // Initialize login card size
+            const cardSize = localStorage.getItem('loginCardSize') || 'medium';
+            const cardSizeSelector = document.getElementById('loginCardSizeSelector');
+            if (cardSizeSelector) cardSizeSelector.value = cardSize;
+            
+            // Initialize custom background preview if available
+            const customBackground = localStorage.getItem('customLoginBackground');
+            if (customBackground && backgroundType === 'custom') {
+                const preview = document.getElementById('backgroundPreview');
+                if (preview) {
+                    preview.style.backgroundImage = `url(${customBackground})`;
+                    preview.innerHTML = '';
+                }
+                
+                const fileNameElement = document.getElementById('backgroundFileName');
+                if (fileNameElement) {
+                    fileNameElement.textContent = 'Custom image loaded';
+                }
+            }
+            
+            // Initialize custom color if available
+            const backgroundColor = localStorage.getItem('loginBackgroundColor');
+            if (backgroundColor && backgroundType === 'color') {
+                const colorPicker = document.getElementById('backgroundColorPicker');
+                if (colorPicker) colorPicker.value = backgroundColor;
+            }
+            
+            // Initialize and apply app background settings
+            const appBackgroundType = localStorage.getItem('appBackground') || 'default';
+            const appBackgroundSelector = document.getElementById('appBackgroundType');
+            if (appBackgroundSelector) {
+                appBackgroundSelector.value = appBackgroundType;
+                
+                // Show/hide custom options
+                const customOptions = document.getElementById('appCustomBackgroundOptions');
+                if (customOptions) {
+                    customOptions.style.display = appBackgroundType === 'custom' ? 'block' : 'none';
+                }
+            }
+            
+            // Initialize app background fit
+            const appBackgroundFit = localStorage.getItem('appBackgroundFit') || 'cover';
+            const fitSelector = document.getElementById('appBackgroundFit');
+            if (fitSelector) fitSelector.value = appBackgroundFit;
+            
+            // Initialize custom background preview if available
+            const appCustomBackground = localStorage.getItem('appCustomBackground');
+            if (appCustomBackground && appBackgroundType === 'custom') {
+                const preview = document.getElementById('appBackgroundPreview');
+                if (preview) {
+                    preview.style.backgroundImage = `url(${appCustomBackground})`;
+                    preview.style.backgroundSize = appBackgroundFit;
+                    preview.style.backgroundRepeat = appBackgroundFit === 'repeat' ? 'repeat' : 'no-repeat';
+                    preview.innerHTML = '';
+                }
+                
+                const fileNameElement = document.getElementById('appBackgroundFileName');
+                if (fileNameElement) {
+                    fileNameElement.textContent = 'Custom image loaded';
+                }
+            }
+            
+            // Apply the app background
+            applyAppBackground(appBackgroundType);
+            
+            // Initialize navigation font size
+            const navFontSize = localStorage.getItem('navFontSize') || '14';
+            const navFontSizeSlider = document.getElementById('navFontSizeSlider');
+            if (navFontSizeSlider) {
+                navFontSizeSlider.value = navFontSize;
+            }
+            
+            // Apply the navigation font size
+            setNavFontSize(navFontSize);
+        });
+        
+        // Add keypress listener to close modal when Escape key is pressed
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeThemeManager();
+            }
+        });
+
+        function applyCustomBackgroundToLogin() {
+            const customBackground = localStorage.getItem('customLoginBackground');
+            if (customBackground) {
+                // Set login background type to 'custom'
+                localStorage.setItem('loginBackground', 'custom');
+                alert('Custom background has been applied to the login page.');
+            } else {
+                alert('No custom background has been uploaded. Please upload an image first.');
+            }
+        }
+        
+        function applyColorBackgroundToLogin() {
+            const colorPicker = document.getElementById('backgroundColorPicker');
+            if (colorPicker) {
+                const color = colorPicker.value;
+                localStorage.setItem('loginBackgroundColor', color);
+                localStorage.setItem('loginBackground', 'color');
+                alert('Background color has been applied to the login page.');
+            } else {
+                alert('Color picker not found. Please try again.');
+            }
+        }
+
+        // Function to save and apply custom background settings
+        function saveAndApplyCustomBackground() {
+            // Get the current background type from the selector
+            const backgroundType = document.getElementById('loginBackgroundSelector').value;
+            
+            if (backgroundType === 'custom') {
+                // Check if we have a custom background saved
+                const customBackground = localStorage.getItem('customLoginBackground');
+                if (customBackground) {
+                    // Make sure login background type is set to custom
+                    localStorage.setItem('loginBackground', 'custom');
+                    alert('Custom background image has been applied to the login page.');
+                } else {
+                    alert('No custom background has been uploaded. Please upload an image first.');
+                }
+            } else if (backgroundType === 'color') {
+                // Get the color from the color picker
+                const colorPicker = document.getElementById('backgroundColorPicker');
+                if (colorPicker) {
+                    const color = colorPicker.value;
+                    localStorage.setItem('loginBackgroundColor', color);
+                    localStorage.setItem('loginBackground', 'color');
+                    alert('Background color has been applied to the login page.');
+                } else {
+                    alert('Color picker not found. Please try again.');
+                }
+            } else {
+                // For other background types, just save the type
+                localStorage.setItem('loginBackground', backgroundType);
+                alert('Background setting has been applied to the login page.');
+            }
+        }
+
+        // Default slideshow images
+        const defaultSlideshowImages = [
+            'https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80',
+            'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80',
+            'https://images.unsplash.com/photo-1446329813274-7c9036bd9a1f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80',
+            'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80',
+            'https://images.unsplash.com/photo-1551009175-8a68da93d5f9?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80'
+        ];
+        
+        // Slideshow variables
+        let slideshowActive = false;
+        let slideshowInterval;
+        let currentSlideIndex = 0;
+        let slideshowImages = [];
+        let slideshowSpeed = 10000; // Default: 10 seconds
+        
+        function startSlideshow() {
+            // Stop any existing slideshow
+            stopSlideshow();
+            
+            // Get saved slideshow images or use defaults
+            slideshowImages = JSON.parse(localStorage.getItem('slideshowImages')) || defaultSlideshowImages;
+            
+            if (slideshowImages.length === 0) {
+                slideshowImages = defaultSlideshowImages;
+            }
+            
+            // Create/clear slideshow containers
+            clearSlideshowElements();
+            
+            // Create two background elements for crossfade effect
+            for (let i = 0; i < 2; i++) {
+                const bgDiv = document.createElement('div');
+                bgDiv.className = 'slideshow-background';
+                bgDiv.id = `slideshow-bg-${i}`;
+                bgDiv.style.zIndex = '-' + (2 + i);
+                bgDiv.style.backgroundSize = 'cover';
+                bgDiv.style.backgroundPosition = 'center';
+                bgDiv.style.backgroundRepeat = 'no-repeat';
+                bgDiv.style.width = '100vw';
+                bgDiv.style.height = '100vh';
+                document.body.appendChild(bgDiv);
+            }
+            
+            // Start with first image
+            currentSlideIndex = 0;
+            showNextSlide();
+            
+            // Get saved speed or use default
+            slideshowSpeed = parseInt(localStorage.getItem('slideshowSpeed')) || 10000;
+            
+            // Start interval
+            slideshowActive = true;
+            slideshowInterval = setInterval(showNextSlide, slideshowSpeed);
+            
+            // Show slideshow controls in theme manager if visible
+            toggleSlideshowControls(true);
+            
+            // Save preference
+            localStorage.setItem('loginBackground', 'slideshow');
+        }
+        
+        function stopSlideshow() {
+            if (slideshowInterval) {
+                clearInterval(slideshowInterval);
+                slideshowInterval = null;
+            }
+            slideshowActive = false;
+            clearSlideshowElements();
+        }
+        
+        function clearSlideshowElements() {
+            // Remove any existing slideshow backgrounds
+            document.querySelectorAll('.slideshow-background').forEach(el => el.remove());
+        }
+        
+        function showNextSlide() {
+            if (slideshowImages.length === 0) return;
+            
+            // Get the two background elements
+            const bg1 = document.getElementById('slideshow-bg-0');
+            const bg2 = document.getElementById('slideshow-bg-1');
+            
+            if (!bg1 || !bg2) return;
+            
+            // Determine which is currently active (visible)
+            const activeElement = bg1.classList.contains('active') ? bg1 : bg2;
+            const inactiveElement = bg1.classList.contains('active') ? bg2 : bg1;
+            
+            // Set the new image to the inactive element with proper sizing for full screen coverage
+            inactiveElement.style.backgroundImage = `url(${slideshowImages[currentSlideIndex]})`;
+            inactiveElement.style.backgroundSize = 'cover';
+            inactiveElement.style.backgroundPosition = 'center';
+            inactiveElement.style.backgroundRepeat = 'no-repeat';
+            inactiveElement.style.width = '100vw';
+            inactiveElement.style.height = '100vh';
+            
+            // Toggle active class to trigger crossfade
+            activeElement.classList.remove('active');
+            inactiveElement.classList.add('active');
+            
+            // Increment index for next time
+            currentSlideIndex = (currentSlideIndex + 1) % slideshowImages.length;
+        }
+        
+        function setTransparency(value) {
+            try {
+                // Update UI display if element exists
+                const transparencyValue = document.getElementById('transparencyValue');
+                if (transparencyValue) {
+                    transparencyValue.textContent = value + '%';
+                }
+                
+                // Create or update the overlay for consistent transparency application
+                let overlay = document.getElementById('background-overlay');
+                if (!overlay) {
+                    // Create overlay if doesn't exist
+                    overlay = document.createElement('div');
+                    overlay.id = 'background-overlay';
+                    overlay.style.position = 'fixed';
+                    overlay.style.top = '0';
+                    overlay.style.left = '0';
+                    overlay.style.width = '100%';
+                    overlay.style.height = '100%';
+                    overlay.style.zIndex = '-1';
+                    document.body.appendChild(overlay);
+                }
+                
+                // Set the overlay opacity (inverse of transparency)
+                overlay.style.backgroundColor = `rgba(245, 245, 245, ${1 - (value / 100)})`;
+                
+                // Save to localStorage
+                localStorage.setItem('loginTransparency', value);
+            } catch (e) {
+                console.error('Error applying transparency:', e);
+            }
+        }
+        
+        function handleSlideshowImageUpload(event) {
+            const files = event.target.files;
+            if (!files.length) return;
+            
+            const file = files[0];
+            
+            // Check file type
+            if (!file.type.match('image.*')) {
+                alert('Please select an image file.');
+                return;
+            }
+            
+            // Check file size (5MB limit)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Image size must be under 5MB.');
+                return;
+            }
+            
+            // Read and process the image
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // Get existing slideshow images or initialize new array
+                let images = JSON.parse(localStorage.getItem('slideshowImages')) || [];
+                
+                // Add the new image
+                images.push(e.target.result);
+                
+                // Save back to localStorage
+                localStorage.setItem('slideshowImages', JSON.stringify(images));
+                
+                // Update the image count display
+                const imageCountSpan = document.getElementById('slideshowImageCount');
+                if (imageCountSpan) {
+                    imageCountSpan.textContent = images.length;
+                }
+                
+                // If slideshow is currently active, restart it to include new image
+                if (slideshowActive) {
+                    startSlideshow();
+                }
+                
+                alert('Image added to slideshow successfully.');
+            };
+            
+            reader.readAsDataURL(file);
+        }
+        
+        function setSlideshowSpeed(seconds) {
+            // Convert to milliseconds
+            slideshowSpeed = seconds * 1000;
+            
+            // Save to localStorage
+            localStorage.setItem('slideshowSpeed', slideshowSpeed);
+            
+            // If slideshow is active, restart with new speed
+            if (slideshowActive) {
+                clearInterval(slideshowInterval);
+                slideshowInterval = setInterval(showNextSlide, slideshowSpeed);
+            }
+            
+            // Update UI
+            const speedDisplay = document.getElementById('slideshowSpeedValue');
+            if (speedDisplay) {
+                speedDisplay.textContent = seconds + 's';
+            }
+        }
+        
+        function resetSlideshowImages() {
+            if (confirm('This will reset slideshow to default images. Continue?')) {
+                // Clear stored images
+                localStorage.removeItem('slideshowImages');
+                
+                // Reset to defaults
+                slideshowImages = [...defaultSlideshowImages];
+                
+                // Update count in UI
+                const imageCountSpan = document.getElementById('slideshowImageCount');
+                if (imageCountSpan) {
+                    imageCountSpan.textContent = defaultSlideshowImages.length;
+                }
+                
+                // If slideshow is active, restart it
+                if (slideshowActive) {
+                    startSlideshow();
+                }
+                
+                alert('Slideshow images have been reset to defaults.');
+            }
+        }
+
+        // ========== Login Background Custom Functions ==========
+        
+        // Function to trigger login background upload
+        function triggerLoginBackgroundUpload() {
+            document.getElementById('loginBackgroundUpload').click();
+        }
+        
+        // Handle login background image upload
+        function handleLoginBackgroundUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // Validate file type
+            if (!file.type.match('image.*')) {
+                alert('Please select an image file.');
+                return;
+            }
+            
+            // Check file size (5MB limit)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Image size must be under 5MB.');
+                return;
+            }
+            
+            // Read the file
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imageData = e.target.result;
+                
+                // Save to localStorage
+                localStorage.setItem('loginCustomBackground', imageData);
+                localStorage.setItem('loginBackground', 'custom');
+                
+                // Update preview
+                updateLoginBackgroundPreview(imageData);
+                
+                // Update login background fit if not set
+                if (!localStorage.getItem('loginBackgroundFit')) {
+                    localStorage.setItem('loginBackgroundFit', 'fill');
+                    if (document.getElementById('loginBackgroundFit')) {
+                        document.getElementById('loginBackgroundFit').value = 'fill';
+                    }
+                }
+                
+                alert('Login background image has been set successfully! The new background will appear next time you log in.');
+            };
+            
+            reader.onerror = function() {
+                alert('Error reading the image file. Please try again.');
+            };
+            
+            reader.readAsDataURL(file);
+        }
+        
+        // Function to change login background fit style
+        function changeLoginBackgroundFit(fitStyle) {
+            localStorage.setItem('loginBackgroundFit', fitStyle);
+            
+            // Update preview if we have a background image
+            const customBg = localStorage.getItem('loginCustomBackground');
+            if (customBg) {
+                updateLoginBackgroundPreview(customBg, fitStyle);
+            }
+            
+            console.log('Login background fit style changed to:', fitStyle);
+        }
+        
+        // Function to update the login background preview
+        function updateLoginBackgroundPreview(imageData, fitStyle) {
+            const preview = document.getElementById('loginBackgroundPreview');
+            const previewText = document.getElementById('previewText');
+            
+            if (preview && imageData) {
+                // Hide the "no image" text
+                if (previewText) previewText.style.display = 'none';
+                
+                // Set the background image
+                preview.style.backgroundImage = `url(${imageData})`;
+                
+                // Apply fit style
+                fitStyle = fitStyle || localStorage.getItem('loginBackgroundFit') || 'fill';
+                
+                switch(fitStyle) {
+                    case 'fill':
+                        preview.style.backgroundSize = 'cover';
+                        preview.style.backgroundPosition = 'center';
+                        break;
+                    case 'fit':
+                        preview.style.backgroundSize = 'contain';
+                        preview.style.backgroundPosition = 'center';
+                        break;
+                    case 'stretch':
+                        preview.style.backgroundSize = '100% 100%';
+                        break;
+                    case 'center':
+                        preview.style.backgroundSize = 'auto';
+                        preview.style.backgroundPosition = 'center';
+                        break;
+                    default:
+                        preview.style.backgroundSize = 'cover';
+                }
+            }
+        }
+        
+        // Initialize login background preview on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if there's a custom background already set
+            const customBg = localStorage.getItem('loginCustomBackground');
+            if (customBg) {
+                updateLoginBackgroundPreview(customBg);
+            }
+            
+            // Set the background fit dropdown to match stored value
+            const fitStyle = localStorage.getItem('loginBackgroundFit');
+            if (fitStyle && document.getElementById('loginBackgroundFit')) {
+                document.getElementById('loginBackgroundFit').value = fitStyle;
+            }
+            
+            // Initialize login theme toggle button icon
+            const isLoginThemeHidden = localStorage.getItem('hideThemeToggle') === 'true';
+            const toggleButton = document.querySelector('button[onclick="toggleLoginThemeIcon()"] i');
+            if (toggleButton) {
+                toggleButton.className = isLoginThemeHidden ? 'fas fa-eye-slash' : 'fas fa-eye';
+                // Also set tooltip to match current state
+                const parentButton = toggleButton.parentElement;
+                if (parentButton) {
+                    parentButton.title = isLoginThemeHidden ? 
+                        "Show theme icon on login page" : 
+                        "Hide theme icon on login page";
+                }
+            }
+        });
+        
+        // Function to open the full login theme manager
+        function openLoginThemeManager() {
+            // Store a flag to indicate that the login theme manager should be opened directly
+            localStorage.setItem('openThemeManager', 'true');
+            
+            // Open the login page in a new tab/window
+            window.open('login.html', '_blank');
+            
+            console.log('Opening login page with theme manager');
+        }
+        
+        // Function to toggle the login theme icon visibility
+        function toggleLoginThemeIcon() {
+            // Get current state, default to false (visible) if not set
+            const currentState = localStorage.getItem('hideThemeToggle') === 'true';
+            
+            // Toggle the state
+            localStorage.setItem('hideThemeToggle', (!currentState).toString());
+            
+            // Update the button icon
+            const toggleButton = document.querySelector('button[onclick="toggleLoginThemeIcon()"] i');
+            if (toggleButton) {
+                const newState = !currentState;
+                // If the new state is hidden, show the "eye-slash" icon, otherwise show the "eye" icon
+                if (newState) {
+                    toggleButton.className = 'fas fa-eye-slash';
+                    alert('Theme icon on login page is now hidden');
+                } else {
+                    toggleButton.className = 'fas fa-eye';
+                    alert('Theme icon on login page is now visible');
+                }
+                
+                // Also update the tooltip
+                const parentButton = toggleButton.parentElement;
+                if (parentButton) {
+                    parentButton.title = newState ? 
+                        "Show theme icon on login page" : 
+                        "Hide theme icon on login page";
+                }
+            }
+        }
+
+        // User Management Functions
+        function showUserManagement() {
+            refreshUserList();
+            document.getElementById('userManagementModal').style.display = 'block';
+        }
+
+        function closeUserManagement() {
+            document.getElementById('userManagementModal').style.display = 'none';
+            document.getElementById('new-username').value = '';
+            document.getElementById('new-password').value = '';
+            document.getElementById('is-admin').checked = false;
+        }
+
+        function refreshUserList() {
+            const userList = document.getElementById('user-list');
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            
+            userList.innerHTML = `
+                <table style="width:100%; border-collapse: collapse;">
+                    <tr style="background-color: #f2f2f2;">
+                        <th style="text-align: left; padding: 8px;">Username</th>
+                        <th style="text-align: left; padding: 8px;">Admin</th>
+                        <th style="text-align: left; padding: 8px;">Actions</th>
+                    </tr>
+                    ${users.map(user => `
+                        <tr>
+                            <td style="padding: 8px;">${user.username}</td>
+                            <td style="padding: 8px;">${user.isAdmin ? 'Yes' : 'No'}</td>
+                            <td style="padding: 8px;">
+                                <button onclick="resetUserPassword('${user.username}')" style="margin-right: 5px;">Reset Password</button>
+                                ${user.username !== 'admin' ? `<button onclick="deleteUser('${user.username}')">Delete</button>` : ''}
+                            </td>
+                        </tr>
+                    `).join('')}
+                </table>
+            `;
+        }
+
+        function addUser() {
+            const username = document.getElementById('new-username').value;
+            const password = document.getElementById('new-password').value;
+            const isAdmin = document.getElementById('is-admin').checked;
+            
+            if (!username || !password) {
+                alert('Username and password are required!');
+                return;
+            }
+            
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            
+            if (users.some(u => u.username === username)) {
+                alert('Username already exists!');
+                return;
+            }
+            
+            users.push({
+                username: username,
+                password: password,
+                isAdmin: isAdmin,
+                email: `${username}@example.com` // Default email
+            });
+            
+            localStorage.setItem('users', JSON.stringify(users));
+            refreshUserList();
+            
+            // Clear form
+            document.getElementById('new-username').value = '';
+            document.getElementById('new-password').value = '';
+            document.getElementById('is-admin').checked = false;
+        }
+
+        function resetUserPassword(username) {
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            const userIndex = users.findIndex(u => u.username === username);
+            
+            if (userIndex !== -1) {
+                users[userIndex].password = '1234';
+                localStorage.setItem('users', JSON.stringify(users));
+                alert(`Password for ${username} has been reset to '1234'`);
+            }
+        }
+
+        function deleteUser(username) {
+            if (confirm(`Are you sure you want to delete user '${username}'?`)) {
+                const users = JSON.parse(localStorage.getItem('users')) || [];
+                const filteredUsers = users.filter(u => u.username !== username);
+                localStorage.setItem('users', JSON.stringify(filteredUsers));
+                refreshUserList();
+            }
+        }
+
+        function changePassword() {
+            const currentPassword = document.getElementById('current-password').value;
+            const newPassword = document.getElementById('new-user-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            const messageDiv = document.getElementById('password-message');
+            
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                messageDiv.textContent = 'All fields are required!';
+                messageDiv.style.color = 'red';
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                messageDiv.textContent = 'New password and confirm password do not match!';
+                messageDiv.style.color = 'red';
+                return;
+            }
+            
+            // Get current user
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) {
+                messageDiv.textContent = 'You are not logged in!';
+                messageDiv.style.color = 'red';
+                return;
+            }
+            
+            // Get all users to update the password
+            const users = JSON.parse(localStorage.getItem('users'));
+            const userIndex = users.findIndex(u => u.username === currentUser.username);
+            
+            if (userIndex === -1) {
+                messageDiv.textContent = 'User not found!';
+                messageDiv.style.color = 'red';
+                return;
+            }
+            
+            if (users[userIndex].password !== currentPassword) {
+                messageDiv.textContent = 'Current password is incorrect!';
+                messageDiv.style.color = 'red';
+                return;
+            }
+            
+            // Update password
+            users[userIndex].password = newPassword;
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            // Also update current user
+            currentUser.password = newPassword;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            
+            messageDiv.textContent = 'Password changed successfully!';
+            messageDiv.style.color = 'green';
+            
+            // Clear fields
+            document.getElementById('current-password').value = '';
+            document.getElementById('new-user-password').value = '';
+            document.getElementById('confirm-password').value = '';
+            
+            // Close modal after a delay
+            setTimeout(function() {
+                closeChangePassword();
+            }, 2000);
+        }
+
+        function closeChangePassword() {
+            document.getElementById('changePasswordModal').style.display = 'none';
+            document.getElementById('current-password').value = '';
+            document.getElementById('new-user-password').value = '';
+            document.getElementById('confirm-password').value = '';
+            document.getElementById('password-message').textContent = '';
+        }
+    </script>
+</body>
+</html> 

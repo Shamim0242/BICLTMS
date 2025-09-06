@@ -1,0 +1,2411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transport Management - Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --background-color: #f5f5f5;
+            --font-family: 'Open Sans', sans-serif; /* Telenor-like font */
+        }
+        body {
+            font-family: var(--font-family);
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            transition: background-color 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            box-sizing: border-box;
+            padding: 20px;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+            width: 100vw;
+            overflow-x: hidden;
+        }
+        /* Wrapper for container to handle margins */
+        .container-wrapper {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            transition: padding 0.3s ease;
+        }
+        .container {
+            display: flex;
+            width: 500px;
+            height: 350px;
+            background-color: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: all 0.5s ease;
+        }
+        
+        /* Add responsive layout for small screens */
+        @media (max-width: 900px) {
+            .container {
+                width: 100% !important; /* Override any set width on small screens */
+                min-width: 0;
+                height: auto !important; /* Override height and use content-based height */
+                min-height: 500px;
+                flex-direction: column;
+            }
+            .login-banner, .login-form {
+                flex: none;
+                width: 100%;
+                padding: 20px;
+            }
+            .login-banner {
+                padding-bottom: 10px;
+            }
+            .login-form {
+                padding-top: 10px;
+            }
+        }
+        
+        /* Even smaller screens */
+        @media (max-width: 500px) {
+            .container {
+                min-height: 400px;
+            }
+            .login-banner, .login-form {
+                padding: 15px;
+            }
+        }
+        
+        .login-banner {
+            flex: 1;
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            transition: background-color 0.3s;
+        }
+        .login-banner h1 {
+            margin-bottom: 20px;
+            font-family: var(--font-family);
+            font-weight: 700;
+        }
+        .login-form {
+            flex: 1;
+            background-color: white;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            transition: background-color 0.3s;
+            font-family: var(--font-family);
+        }
+        h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 20px;
+            font-family: var(--font-family);
+            font-weight: 600;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .forgot-password {
+            text-align: right;
+            margin-top: 10px;
+        }
+        .forgot-password a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .error-message {
+            color: #f44336;
+            margin-top: 15px;
+            font-size: 14px;
+            display: none;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            width: 40%;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: black;
+        }
+        /* Theme Management Styles */
+        .theme-controls {
+            display: none;
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            max-height: 80vh;
+            overflow-y: auto;
+            z-index: 9999;
+        }
+        .theme-controls.visible {
+            display: block;
+        }
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+            z-index: 9999;
+        }
+        .theme-toggle:hover {
+            transform: rotate(30deg);
+        }
+        .theme-option {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+        }
+        .theme-option h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .color-options {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .color-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .color-option.selected {
+            border-color: #333;
+        }
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+        .transparency-control, .alignment-control {
+            margin-bottom: 10px;
+        }
+        .alignment-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .alignment-button {
+            padding: 5px 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .alignment-button.selected {
+            background-color: var(--primary-color);
+        }
+        .slider {
+            width: 100%;
+            margin-top: 5px;
+        }
+        /* Add high contrast placeholder style */
+        input.high-contrast-placeholder::placeholder {
+            color: #333;
+            opacity: 0.8;
+        }
+        /* Size classes */
+        .size-small, .size-medium, .size-large, .size-selector, .container.size-small, .container.size-medium, .container.size-large, .dark-theme .size-selector select {
+            /* Removing unused size classes */
+        }
+        
+        /* General Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: var(--font-family);
+            transition: all 0.3s ease;
+        }
+        
+        /* Size selector styles */
+        .size-selector {
+            margin-bottom: 10px;
+            display: flex;
+            width: 100%;
+        }
+        
+        .size-selector select {
+            padding: 5px 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            background-color: #fff;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        /* Dark mode styles for size selector */
+        .dark-theme .size-selector select {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            border-color: #34495e;
+        }
+        
+        /* Card sizes */
+        .container.size-small {
+            width: 500px;
+            height: 350px;
+        }
+        
+        .container.size-medium {
+            width: 700px;
+            height: 400px;
+        }
+        
+        .container.size-large {
+            width: 800px;
+            height: 500px;
+        }
+        
+        /* Container Wrapper */
+        .container-wrapper {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            transition: padding 0.3s ease;
+        }
+        
+        /* Slideshow Background Styles */
+        .slideshow-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+        }
+        
+        .slideshow-background.active {
+            opacity: 1;
+        }
+        
+        /* Slideshow Controls */
+        .slideshow-controls {
+            display: none;
+            margin-top: 10px;
+        }
+        
+        .slideshow-controls.visible {
+            display: block;
+        }
+        
+        .slideshow-controls label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .slideshow-controls input[type="range"] {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .slideshow-controls button {
+            padding: 4px 8px;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+        
+        .slideshow-file-input {
+            display: none;
+        }
+        
+        /* Navigation styles for settings panel */
+        .settings-nav-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            transition: all 0.2s ease;
+            color: #5f6368;
+            font-size: 14px;
+        }
+        
+        .settings-nav-item:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+        
+        .settings-nav-item.active-nav {
+            border-left-color: var(--primary-color);
+            color: var(--primary-color);
+            background-color: rgba(0,0,0,0.05);
+            font-weight: 500;
+        }
+        
+        /* Settings tabs */
+        .settings-tab {
+            display: none;
+        }
+        
+        .settings-tab.active {
+            display: block;
+        }
+        .image-preview {
+            max-width: 100%;
+            max-height: 200px;
+            margin-top: 10px;
+            display: none;
+            border-radius: 4px;
+        }
+        
+        /* Custom Slideshow Styles */
+        .custom-slideshow-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: opacity 1s ease-in-out;
+        }
+    </style>
+    <!-- Add custom slideshow functionality -->
+    <script src="assets/js/customSlideshow.js"></script>
+</head>
+<body>
+    <!-- Add wrapper div -->
+    <div class="container-wrapper" id="container-wrapper">
+        <div id="loginCard" class="container">
+        <div class="login-banner">
+            <h1>Transport Management</h1>
+            <p>Manage your vehicles efficiently and track your fleet with ease.</p>
+        </div>
+        <div class="login-form">
+            <h2>Login to Your Account</h2>
+            <div id="login-error" class="error-message">Invalid username or password!</div>
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" placeholder="Enter your username">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter your password">
+            </div>
+            <button onclick="login()">Login</button>
+            <div class="forgot-password">
+                <a href="#" onclick="showResetModal()">Forgot Password?</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Theme Controls Button -->
+    <button id="themeToggle" class="theme-toggle" onclick="showThemeManager()">
+        <i class="fas fa-paint-brush"></i>
+    </button>
+    
+    <!-- Test Custom Slideshow Button -->
+    <button id="testSlideshow" style="position: fixed; top: 80px; right: 20px; background-color: #2196F3; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); transition: transform 0.3s ease; z-index: 9999;" onclick="testCustomSlideshow()" title="Test Custom Slideshow">
+        <i class="fas fa-play"></i>
+    </button>
+    
+    <!-- Reset Slideshow Button -->
+    <button id="resetSlideshow" style="position: fixed; top: 130px; right: 20px; background-color: #FF9800; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); transition: transform 0.3s ease; z-index: 9999;" onclick="resetSlideshowToDefaults()" title="Reset Slideshow (5s, image01-09)">
+        <i class="fas fa-redo"></i>
+    </button>
+    
+    <!-- Theme Manager Modal with Navigation -->
+    <div id="themeManagerModal" class="modal">
+        <div class="modal-content" style="max-width: 600px; border-radius: 8px; padding: 0; overflow: hidden;">
+            <div style="background-color: var(--primary-color, #4CAF50); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="margin: 0; font-size: 18px;">Settings</h2>
+                <span class="close" onclick="closeThemeManager()" style="color: white;">&times;</span>
+            </div>
+            
+            <!-- Chrome-like navigation sidebar -->
+            <div style="display: flex; height: 400px;">
+                <div style="width: 180px; background-color: #f8f9fa; border-right: 1px solid #ddd; overflow-y: auto;">
+                    <div class="settings-nav-item active-nav" onclick="showSettingsTab('appearance')" style="padding: 12px 16px; cursor: pointer; border-left: 3px solid transparent;" id="appearance-tab">
+                        <i class="fas fa-palette" style="margin-right: 10px;"></i> Appearance
+                    </div>
+                    <div class="settings-nav-item" onclick="showSettingsTab('background')" style="padding: 12px 16px; cursor: pointer; border-left: 3px solid transparent;" id="background-tab">
+                        <i class="fas fa-image" style="margin-right: 10px;"></i> Background
+                    </div>
+                    <div class="settings-nav-item" onclick="showSettingsTab('layout')" style="padding: 12px 16px; cursor: pointer; border-left: 3px solid transparent;" id="layout-tab">
+                        <i class="fas fa-columns" style="margin-right: 10px;"></i> Layout
+                    </div>
+                </div>
+                
+                <!-- Settings content -->
+                <div style="flex: 1; padding: 20px; overflow-y: auto;">
+                    <!-- Appearance Tab -->
+                    <div class="settings-tab" id="appearance-content">
+                        <h3 style="margin-top: 0; color: #202124; font-size: 16px;">Color Theme</h3>
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
+                            <div onclick="setThemeColor('#4CAF50')" style="width: 35px; height: 35px; background-color: #4CAF50; border-radius: 50%; cursor: pointer; border: 2px solid transparent;" class="color-option"></div>
+                            <div onclick="setThemeColor('#2196F3')" style="width: 35px; height: 35px; background-color: #2196F3; border-radius: 50%; cursor: pointer; border: 2px solid transparent;" class="color-option"></div>
+                            <div onclick="setThemeColor('#F44336')" style="width: 35px; height: 35px; background-color: #F44336; border-radius: 50%; cursor: pointer; border: 2px solid transparent;" class="color-option"></div>
+                            <div onclick="setThemeColor('#9C27B0')" style="width: 35px; height: 35px; background-color: #9C27B0; border-radius: 50%; cursor: pointer; border: 2px solid transparent;" class="color-option"></div>
+                            <div onclick="setThemeColor('#FF9800')" style="width: 35px; height: 35px; background-color: #FF9800; border-radius: 50%; cursor: pointer; border: 2px solid transparent;" class="color-option"></div>
+                            <div onclick="setThemeColor('#607D8B')" style="width: 35px; height: 35px; background-color: #607D8B; border-radius: 50%; cursor: pointer; border: 2px solid transparent;" class="color-option"></div>
+                        </div>
+                        
+                        <div style="margin-top: 10px; display: flex; align-items: center; gap: 10px;">
+                            <label for="custom-color-picker" style="color: #5f6368; margin: 0; flex-shrink: 0;">Custom:</label>
+                            <input type="color" id="custom-color-picker" style="width: 40px; height: 30px; border: none; cursor: pointer;" onchange="setThemeColor(this.value)">
+                        </div>
+                        
+                        <h3 style="margin-top: 20px; color: #202124; font-size: 16px;">Card Transparency</h3>
+                        <div style="margin-bottom: 20px;">
+                            <p style="color: #5f6368; margin-bottom: 10px;">Adjust login card transparency</p>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                    <label for="card-transparency-slider" style="color: #5f6368;">Card Transparency</label>
+                                    <span id="cardTransparencyValue">50%</span>
+                                </div>
+                                <input type="range" id="cardTransparencySlider" min="50" max="100" value="50" class="slider" style="width: 100%;" oninput="setCardTransparency(this.value)">
+                                <div style="margin-top: 5px; display: flex; justify-content: space-between;">
+                                    <button onclick="setCardTransparency(50)" style="padding: 4px 8px; font-size: 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">Default (50%)</button>
+                                    <button onclick="resetCardTransparencyToOriginal()" style="padding: 4px 8px; font-size: 12px; background-color: #607D8B; color: white; border: none; border-radius: 4px; cursor: pointer;">Original (100%)</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 30px; border-top: 1px solid #dadce0; padding-top: 15px;">
+                            <button onclick="undoAllTransparencyChanges()" style="background-color: #f44336; color: white; border: none; border-radius: 4px; padding: 8px 15px; width: 100%; cursor: pointer; font-weight: bold;">Reset All Settings</button>
+                            <p style="color: #5f6368; margin-top: 10px; font-size: 12px;">This will undo all transparency changes and restore original defaults.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Background Tab -->
+                    <div class="settings-tab" id="background-content" style="display: none;">
+                        <h3 style="margin-top: 0; color: #202124; font-size: 16px;">Background Type</h3>
+                        <div style="margin-bottom: 20px;">
+                            <select id="backgroundSelector" onchange="applyBackground(this.value)" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                                <option value="default">Default</option>
+                                <option value="gradient1">Gradient 1 (Blue-Purple)</option>
+                                <option value="gradient2">Gradient 2 (Pink-Red)</option>
+                                <option value="gradient3">Gradient 3 (Green-Teal)</option>
+                                <option value="pattern1">Pattern 1</option>
+                                <option value="pattern2">Pattern 2</option>
+                                <option value="slideshow">Slideshow</option>
+                                <option value="customSlideshow">Custom Slideshow (image01-image09)</option>
+                                <option value="custom">Custom Image</option>
+                                <option value="color">Custom Color</option>
+                            </select>
+                        </div>
+                        
+                        <div id="customBackgroundOptions" style="display: none;">
+                            <h3 style="margin-top: 20px; color: #202124; font-size: 16px;">Custom Background</h3>
+                            <button onclick="triggerFileUpload()" style="margin-bottom: 10px; padding: 8px 12px; background-color: var(--primary-color);">Upload Image</button>
+                            <input type="file" id="backgroundImageUpload" style="display: none;" onchange="handleBackgroundImageUpload(event)" accept="image/*">
+                            
+                            <div style="margin-top: 10px;">
+                                <label for="customBackgroundColor" style="color: #5f6368;">Background Color:</label>
+                                <div style="display: flex; gap: 5px; margin-top: 5px;">
+                                    <input type="color" id="customBackgroundColor" value="#f0f0f0" style="width: 100%;">
+                                    <button onclick="applyCustomBackgroundColor()" style="padding: 4px 8px; background-color: var(--primary-color);">Apply</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h3 style="margin-top: 20px; color: #202124; font-size: 16px;">Background Transparency</h3>
+                        <div style="margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                <label for="transparencySlider" style="color: #5f6368;">Transparency</label>
+                                <span id="transparencyValue">50%</span>
+                            </div>
+                            <input type="range" id="transparencySlider" min="0" max="100" value="50" class="slider" style="width: 100%;" oninput="setTransparency(this.value)">
+                            <button onclick="resetTransparency()" style="margin-top: 10px; padding: 4px 8px; background-color: var(--primary-color);">Reset to Default</button>
+                        </div>
+                        
+                        <!-- Slideshow Controls -->
+                        <div class="slideshow-controls" style="display: none;">
+                            <h3 style="margin-top: 20px; color: #202124; font-size: 16px;">Slideshow Settings</h3>
+                            <label style="color: #5f6368;">Speed: <span id="slideshow-speed-display">10</span> seconds</label>
+                            <input type="range" min="3" max="30" value="10" class="slider" style="width: 100%;" oninput="setSlideshowSpeed(this.value)">
+                            
+                            <div style="margin-top: 10px;">
+                                <label style="color: #5f6368;">Images: <span id="slideshow-image-count">5</span></label>
+                                <div style="display: flex; gap: 5px; margin-top: 5px;">
+                                    <button onclick="uploadSlideshowImage()" style="padding: 4px 8px; background-color: var(--primary-color);">Add Images</button>
+                                    <button onclick="resetSlideshowImages()" style="padding: 4px 8px; background-color: var(--primary-color);">Reset</button>
+                                </div>
+                                <input type="file" id="slideshow-image-upload" class="slideshow-file-input" onchange="handleSlideshowImageUpload(event)" accept="image/*" multiple>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Layout Tab -->
+                    <div class="settings-tab" id="layout-content" style="display: none;">
+                        <h3 style="margin-top: 0; color: #202124; font-size: 16px;">Card Alignment</h3>
+                        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                            <button onclick="setCardAlignment('left')" class="alignment-button" style="flex: 1; padding: 8px 12px; background-color: #f1f3f4; color: #202124; border: 1px solid #dadce0; border-radius: 4px; cursor: pointer;">Left</button>
+                            <button onclick="setCardAlignment('center')" class="alignment-button selected" style="flex: 1; padding: 8px 12px; background-color: var(--primary-color); color: white; border: 1px solid var(--primary-color); border-radius: 4px; cursor: pointer;">Center</button>
+                            <button onclick="setCardAlignment('right')" class="alignment-button" style="flex: 1; padding: 8px 12px; background-color: #f1f3f4; color: #202124; border: 1px solid #dadce0; border-radius: 4px; cursor: pointer;">Right</button>
+                        </div>
+                        
+                        <h3 style="margin-top: 20px; color: #202124; font-size: 16px;">Card Size</h3>
+                        <div style="margin-bottom: 20px;">
+                            <select id="cardSizeSelector" onchange="setCardSize(this.value)" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                                <option value="small">Small</option>
+                                <option value="medium">Medium</option>
+                                <option value="large">Large</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Reset Modal -->
+    <div id="resetModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeResetModal()">&times;</span>
+            <h2>Reset Password</h2>
+            <p>Enter your username to receive a password reset email.</p>
+            <div class="form-group">
+                <label for="reset-username">Username</label>
+                <input type="text" id="reset-username" placeholder="Enter your username">
+            </div>
+            <button onclick="resetPassword()">Send Reset Email</button>
+            <div id="reset-message" style="margin-top: 15px; color: #4CAF50;"></div>
+        </div>
+    </div>
+
+    <!-- Admin User Management Modal -->
+    <div id="userManagementModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeUserManagementModal()">&times;</span>
+            <h2>User Management</h2>
+            <div id="user-list" style="margin-bottom: 20px;">
+                <!-- User list will be populated here -->
+            </div>
+            <h3>Add New User</h3>
+            <div class="form-group">
+                <label for="new-username">Username</label>
+                <input type="text" id="new-username" placeholder="Enter username">
+            </div>
+            <div class="form-group">
+                <label for="new-password">Password</label>
+                <input type="password" id="new-password" placeholder="Enter password">
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="is-admin"> Admin privileges
+                </label>
+            </div>
+            <button onclick="addUser()">Add User</button>
+        </div>
+    </div>
+
+    <!-- Login Footer -->
+    <div id="login-footer" class="login-footer" style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: rgba(255, 255, 255, 0.25); text-align: center; padding: 10px 0; border-top: 3px solid var(--primary-color, #4CAF50); font-family: var(--font-family); color: #333; font-size: 14px; opacity: 1; transition: opacity 0.5s ease; z-index: 10; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 -5px 15px rgba(0,0,0,0.08); text-shadow: 0 0 3px rgba(255,255,255,0.8);">
+        <div style="max-width: 600px; margin: 0 auto; padding: 0 20px;">
+            <strong>Demo by Md. Shamim Rashed</strong><br>
+            Copyright © 2025 All Rights Reserved
+            </div>
+        </div>
+        
+    <style>
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 0 20px;
+        }
+    </style>
+
+    <script>
+        // Add a basic initTheme function since it's missing
+        function initTheme() {
+            // Simply call loadThemeSettings to handle all theme initialization
+            loadThemeSettings();
+        }
+        
+        // Add the missing adjustColorBrightness function
+        function adjustColorBrightness(hex, percent) {
+            // Convert hex to RGB
+            let r = parseInt(hex.substring(1, 3), 16);
+            let g = parseInt(hex.substring(3, 5), 16);
+            let b = parseInt(hex.substring(5, 7), 16);
+            
+            // Adjust brightness
+            r = parseInt(r * (100 + percent) / 100);
+            g = parseInt(g * (100 + percent) / 100);
+            b = parseInt(b * (100 + percent) / 100);
+            
+            // Ensure values are in valid range
+            r = r < 255 ? r : 255;
+            g = g < 255 ? g : 255;
+            b = b < 255 ? b : 255;
+            
+            // Convert back to hex
+            const rr = ((r.toString(16).length === 1) ? "0" + r.toString(16) : r.toString(16));
+            const gg = ((g.toString(16).length === 1) ? "0" + g.toString(16) : g.toString(16));
+            const bb = ((b.toString(16).length === 1) ? "0" + b.toString(16) : b.toString(16));
+            
+            return "#" + rr + gg + bb;
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Hide error message initially
+            document.getElementById('login-error').style.display = 'none';
+            
+            // Apply default card transparency immediately
+            const savedCardTransparency = localStorage.getItem('loginCardTransparency') || '50';
+            const container = document.querySelector('.container');
+            const loginForm = document.querySelector('.login-form');
+            if (container) {
+                container.style.backgroundColor = `rgba(255, 255, 255, ${savedCardTransparency / 100})`;
+                if (loginForm) {
+                    loginForm.style.backgroundColor = `rgba(255, 255, 255, ${savedCardTransparency / 100})`;
+                }
+            }
+            
+            // Apply background transparency immediately
+            const savedBgTransparency = localStorage.getItem('loginTransparency') || '50';
+            setTransparency(savedBgTransparency);
+            
+            // Set default background transparency to 50% if not already set
+            if (!localStorage.getItem('loginTransparency')) {
+                localStorage.setItem('loginTransparency', '50');
+            }
+            
+            // Check if theme toggle button should be hidden
+            if (localStorage.getItem('hideThemeToggle') === 'true') {
+                const themeToggle = document.getElementById('themeToggle');
+                if (themeToggle) {
+                    themeToggle.style.display = 'none';
+                    console.log('Theme toggle button hidden based on localStorage setting');
+                }
+            } else {
+                const themeToggle = document.getElementById('themeToggle');
+                if (themeToggle) {
+                    themeToggle.style.display = 'block';
+                    console.log('Theme toggle button shown based on localStorage setting');
+                }
+            }
+            
+            // Initialize theme
+            initTheme();
+            
+            // Initialize responsive layout
+            handleResponsiveLayout();
+            
+            // Check for stored credentials if "Remember Me" was checked
+            checkStoredCredentials();
+            
+            // Only add event listener if element exists
+            const themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function() {
+                    showThemeManager();
+                });
+            }
+            
+            // Initialize the settings in the theme manager
+            initializeThemeManager();
+            
+            // Set default card transparency to 50% if not already set
+            if (!localStorage.getItem('loginCardTransparency')) {
+                localStorage.setItem('loginCardTransparency', '50');
+                // Apply it immediately
+                const container = document.querySelector('.container');
+                const loginForm = document.querySelector('.login-form');
+                if (container) {
+                    container.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
+                    if (loginForm) {
+                        loginForm.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
+                    }
+                }
+            }
+            
+            // Add diagnostic info for debugging
+            console.log("DOM loaded - Login page");
+            console.log("Login background type:", localStorage.getItem('loginBackground'));
+            console.log("Custom background exists:", Boolean(localStorage.getItem('loginCustomBackground')));
+            
+            // Add cleanup for custom slideshow on page unload (only if extension not loaded)
+            if (typeof window.startCustomSlideshow !== 'function') {
+                window.addEventListener('beforeunload', function() {
+                    stopCustomBackgroundSlideshow();
+                });
+            }
+            
+
+            
+            // Initialize background selector
+            const backgroundSelector = document.getElementById('backgroundSelector');
+            if (backgroundSelector) {
+                const savedBackground = localStorage.getItem('loginBackground');
+                if (savedBackground) {
+                    backgroundSelector.value = savedBackground;
+                    toggleCustomBackgroundOptions(savedBackground);
+                }
+                
+                // Add event listener for background selector
+                backgroundSelector.addEventListener('change', function() {
+                    const selectedBackground = this.value;
+                    applyBackground(selectedBackground);
+                    toggleCustomBackgroundOptions(selectedBackground);
+                    // Save selection to localStorage
+                    localStorage.setItem('loginBackground', selectedBackground);
+                });
+            }
+            
+            // Initialize transparency sliders
+            const transparencySlider = document.getElementById('transparencySlider');
+            if (transparencySlider) {
+                const savedTransparency = localStorage.getItem('loginTransparency') || '50';
+                transparencySlider.value = savedTransparency;
+                setTransparency(savedTransparency);
+            }
+            
+            const cardTransparencySlider = document.getElementById('cardTransparencySlider');
+            if (cardTransparencySlider) {
+                const savedCardTransparency = localStorage.getItem('loginCardTransparency') || '50';
+                cardTransparencySlider.value = savedCardTransparency;
+                setCardTransparency(savedCardTransparency);
+            }
+            
+            // Always start the custom slideshow immediately
+            console.log("Force starting custom slideshow on page load");
+            setTimeout(() => {
+                startCustomBackgroundSlideshow();
+            }, 100);
+            
+            // Add page visibility listener to restart slideshow when returning to page
+            document.addEventListener('visibilitychange', function() {
+                if (!document.hidden) {
+                    console.log("Page became visible, restarting slideshow");
+                    setTimeout(() => {
+                        startCustomBackgroundSlideshow();
+                    }, 500);
+                }
+            });
+            
+            // Check if theme manager should be opened automatically
+            if (localStorage.getItem('openThemeManager') === 'true') {
+                // Clear the flag
+                localStorage.removeItem('openThemeManager');
+                
+                // Show the theme manager after a short delay to ensure page is loaded
+                setTimeout(function() {
+                    showThemeManager();
+                    console.log("Theme manager automatically opened");
+                }, 300);
+            }
+        });
+        
+        // Add the checkStoredCredentials function
+        function checkStoredCredentials() {
+            // This function would normally load saved credentials
+            // For this implementation, we'll keep it simple
+            console.log("Checking for stored credentials");
+            
+            // Implement remember me functionality if needed
+            const rememberedUser = localStorage.getItem('rememberedUser');
+            if (rememberedUser) {
+                try {
+                    const userData = JSON.parse(rememberedUser);
+                    if (userData.username) {
+                        document.getElementById('username').value = userData.username;
+                        // Don't auto-fill password for security
+                    }
+                } catch (e) {
+                    console.error("Error parsing remembered user:", e);
+                    localStorage.removeItem('rememberedUser');
+                }
+            }
+        }
+        
+        // Initialize user data if not existing
+        if (!localStorage.getItem('users')) {
+            const defaultUsers = [
+                { username: 'admin', password: '1234', isAdmin: true, email: 'shamim0242@gmail.com' },
+                { username: 'user', password: '1234', isAdmin: false, email: 'user@example.com' },
+                { username: 'anwarhossain', password: '1234', isAdmin: false, email: 'anwarhossain@example.com' }
+            ];
+            localStorage.setItem('users', JSON.stringify(defaultUsers));
+        }
+
+        // Login function
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // Add console logging for debugging
+            console.log("Login attempt with username:", username);
+            
+            try {
+                // Get users from localStorage
+                const usersJson = localStorage.getItem('users');
+                console.log("Users JSON:", usersJson);
+                
+                // Check if users exist in localStorage
+                if (!usersJson) {
+                    console.error("No users found in localStorage - reinitializing");
+                    const defaultUsers = [
+                        { username: 'admin', password: '1234', isAdmin: true, email: 'shamim0242@gmail.com' },
+                        { username: 'user', password: '1234', isAdmin: false, email: 'user@example.com' },
+                        { username: 'anwarhossain', password: '1234', isAdmin: false, email: 'anwarhossain@example.com' }
+                    ];
+                    localStorage.setItem('users', JSON.stringify(defaultUsers));
+                }
+                
+                // Parse users from localStorage
+            const users = JSON.parse(localStorage.getItem('users'));
+                console.log("Users found:", users.length);
+            
+                // Find matching user
+            const user = users.find(u => u.username === username && u.password === password);
+                console.log("User found:", user ? "Yes" : "No");
+            
+            if (user) {
+                // Store logged in user
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                    console.log("Logging in as:", user.username, "Admin:", user.isAdmin);
+                
+                // Redirect to vehicles page
+                window.location.href = 'vehicles.html';
+            } else {
+                const errorMessage = document.getElementById('login-error');
+                errorMessage.style.display = 'block';
+                setTimeout(() => {
+                    errorMessage.style.display = 'none';
+                }, 3000);
+                }
+            } catch (error) {
+                console.error("Error during login:", error);
+                alert("An error occurred during login. Please check the console for details.");
+            }
+        }
+
+        // Password Reset Modal
+        function showResetModal() {
+            document.getElementById('resetModal').style.display = 'block';
+        }
+
+        function closeResetModal() {
+            document.getElementById('resetModal').style.display = 'none';
+            document.getElementById('reset-message').textContent = '';
+            document.getElementById('reset-username').value = '';
+        }
+
+        function resetPassword() {
+            const username = document.getElementById('reset-username').value;
+            const users = JSON.parse(localStorage.getItem('users'));
+            
+            const user = users.find(u => u.username === username);
+            
+            if (user) {
+                // In a real app, this would trigger an email
+                // For demo, we'll just reset the password
+                user.password = '1234';
+                localStorage.setItem('users', JSON.stringify(users));
+                
+                document.getElementById('reset-message').textContent = 
+                    `Password has been reset to '1234'. In a real system, a reset link would be sent to ${user.email || 'your email'}.`;
+            } else {
+                document.getElementById('reset-message').textContent = 'Username not found.';
+                document.getElementById('reset-message').style.color = '#f44336';
+            }
+        }
+
+        // Admin User Management
+        function showUserManagementModal() {
+            refreshUserList();
+            document.getElementById('userManagementModal').style.display = 'block';
+        }
+
+        function closeUserManagementModal() {
+            document.getElementById('userManagementModal').style.display = 'none';
+            document.getElementById('new-username').value = '';
+            document.getElementById('new-password').value = '';
+            document.getElementById('is-admin').checked = false;
+        }
+
+        function refreshUserList() {
+            const userList = document.getElementById('user-list');
+            const users = JSON.parse(localStorage.getItem('users'));
+            
+            userList.innerHTML = `
+                <table style="width:100%; border-collapse: collapse;">
+                    <tr style="background-color: #f2f2f2;">
+                        <th style="text-align: left; padding: 8px;">Username</th>
+                        <th style="text-align: left; padding: 8px;">Admin</th>
+                        <th style="text-align: left; padding: 8px;">Actions</th>
+                    </tr>
+                    ${users.map(user => `
+                        <tr>
+                            <td style="padding: 8px;">${user.username}</td>
+                            <td style="padding: 8px;">${user.isAdmin ? 'Yes' : 'No'}</td>
+                            <td style="padding: 8px;">
+                                <button onclick="resetUserPassword('${user.username}')" style="margin-right: 5px;">Reset Password</button>
+                                ${user.username !== 'admin' ? `<button onclick="deleteUser('${user.username}')">Delete</button>` : ''}
+                            </td>
+                        </tr>
+                    `).join('')}
+                </table>
+            `;
+        }
+
+        function addUser() {
+            const username = document.getElementById('new-username').value;
+            const password = document.getElementById('new-password').value;
+            const isAdmin = document.getElementById('is-admin').checked;
+            
+            if (!username || !password) {
+                alert('Username and password are required!');
+                return;
+            }
+            
+            const users = JSON.parse(localStorage.getItem('users'));
+            
+            if (users.some(u => u.username === username)) {
+                alert('Username already exists!');
+                return;
+            }
+            
+            users.push({
+                username: username,
+                password: password,
+                isAdmin: isAdmin,
+                email: `${username}@example.com` // Default email
+            });
+            
+            localStorage.setItem('users', JSON.stringify(users));
+            refreshUserList();
+            
+            // Clear form
+            document.getElementById('new-username').value = '';
+            document.getElementById('new-password').value = '';
+            document.getElementById('is-admin').checked = false;
+        }
+
+        function resetUserPassword(username) {
+            const users = JSON.parse(localStorage.getItem('users'));
+            const userIndex = users.findIndex(u => u.username === username);
+            
+            if (userIndex !== -1) {
+                users[userIndex].password = '1234';
+                localStorage.setItem('users', JSON.stringify(users));
+                alert(`Password for ${username} has been reset to '1234'`);
+            }
+        }
+
+        function deleteUser(username) {
+            if (confirm(`Are you sure you want to delete user '${username}'?`)) {
+                const users = JSON.parse(localStorage.getItem('users'));
+                const filteredUsers = users.filter(u => u.username !== username);
+                localStorage.setItem('users', JSON.stringify(filteredUsers));
+                refreshUserList();
+            }
+        }
+
+        // Handle Enter key for login
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                if (document.getElementById('resetModal').style.display === 'block') {
+                    resetPassword();
+                } else if (document.getElementById('userManagementModal').style.display !== 'block') {
+                    login();
+                }
+            }
+        });
+
+        // Theme Management Functions
+        function showThemeManager() {
+            const themeManagerModal = document.getElementById('themeManagerModal');
+            if (themeManagerModal) {
+                // Show modal
+                themeManagerModal.style.display = 'block';
+                
+                // Try to initialize settings if not already done
+                if (!window.themeManagerInitialized) {
+                    // Initialize values from localStorage
+                    try {
+                        // Initialize background type
+                        const bgType = localStorage.getItem('loginBackground');
+                        if (bgType) {
+                            const backgroundSelector = document.getElementById('backgroundSelector');
+                            if (backgroundSelector) {
+                                backgroundSelector.value = bgType;
+                                toggleCustomBackgroundOptions(bgType);
+                                toggleSlideshowControls(bgType === 'slideshow');
+                            }
+                        }
+                        
+                        // Initialize transparency
+                        const transparency = localStorage.getItem('loginTransparency') || '50';
+                        const transparencySlider = document.getElementById('transparencySlider');
+                        const transparencyValue = document.getElementById('transparencyValue');
+                        if (transparencySlider) transparencySlider.value = transparency;
+                        if (transparencyValue) transparencyValue.textContent = transparency + '%';
+                        
+                        // Initialize card transparency
+                        const cardTransparency = localStorage.getItem('loginCardTransparency') || '50';
+                        const cardSlider = document.getElementById('cardTransparencySlider');
+                        const cardValue = document.getElementById('cardTransparencyValue');
+                        if (cardSlider) cardSlider.value = cardTransparency;
+                        if (cardValue) cardValue.textContent = cardTransparency + '%';
+                        
+                        // Initialize card size
+                        const cardSize = localStorage.getItem('loginCardSize');
+                        if (cardSize) {
+                            const sizeSelector = document.getElementById('cardSizeSelector');
+                            if (sizeSelector) sizeSelector.value = cardSize;
+                        }
+                        
+                        // Initialize theme color for buttons and navigation
+                        const themeColor = localStorage.getItem('themeColor');
+                        if (themeColor) {
+                            // Update color options
+                            document.querySelectorAll('.color-option').forEach(option => {
+                                const optionColor = window.getComputedStyle(option).backgroundColor;
+                                const hexColor = rgbToHex(optionColor);
+                                if (hexColor.toUpperCase() === themeColor.toUpperCase()) {
+                                    option.style.border = '2px solid #333';
+                                }
+                            });
+                            
+                            // Update active navigation item
+                            const activeNavItem = document.querySelector('.settings-nav-item.active-nav');
+                            if (activeNavItem) {
+                                activeNavItem.style.borderLeftColor = themeColor;
+                                activeNavItem.style.color = themeColor;
+                            }
+                            
+                            // Update custom color picker
+                            const customPicker = document.getElementById('custom-color-picker');
+                            if (customPicker) {
+                                customPicker.value = themeColor;
+                            }
+                        }
+                        
+                        window.themeManagerInitialized = true;
+                    } catch (e) {
+                        console.error("Error initializing theme manager:", e);
+                    }
+                }
+                
+                // Show default tab
+                showSettingsTab('appearance');
+            }
+        }
+        
+        function closeThemeManager() {
+            const themeManagerModal = document.getElementById('themeManagerModal');
+            if (themeManagerModal) {
+                themeManagerModal.style.display = 'none';
+            }
+        }
+        
+        function showSettingsTab(tab) {
+            // Show selected tab content
+            const tabs = document.querySelectorAll('.settings-tab');
+            tabs.forEach(t => t.style.display = 'none');
+            const selectedTab = document.getElementById(`${tab}-content`);
+            if (selectedTab) {
+                selectedTab.style.display = 'block';
+            }
+            
+            // Update navigation highlights
+            const navItems = document.querySelectorAll('.settings-nav-item');
+            navItems.forEach(item => {
+                item.classList.remove('active-nav');
+                item.style.borderLeftColor = 'transparent';
+                item.style.color = '#5f6368';
+            });
+            
+            // Add active class to selected nav item
+            const selectedNavItem = document.getElementById(`${tab}-tab`);
+            if (selectedNavItem) {
+                selectedNavItem.classList.add('active-nav');
+                
+                // Apply theme color to active nav item
+                const themeColor = localStorage.getItem('themeColor') || '#4CAF50';
+                selectedNavItem.style.borderLeftColor = themeColor;
+                selectedNavItem.style.color = themeColor;
+            }
+            
+            // If on background tab, manage specialized controls
+            if (tab === 'background') {
+                // Get current background type
+                const backgroundSelector = document.getElementById('backgroundSelector');
+                if (backgroundSelector) {
+                    const backgroundType = backgroundSelector.value;
+                    toggleCustomBackgroundOptions(backgroundType);
+                    toggleSlideshowControls(backgroundType === 'slideshow');
+                }
+            }
+            
+            console.log(`Switched to ${tab} tab`);
+        }
+        
+        // Function to show/hide custom background options based on background type
+        function toggleCustomBackgroundOptions(backgroundType) {
+            const customOptions = document.getElementById('customBackgroundOptions');
+            if (customOptions) {
+                if (backgroundType === 'custom' || backgroundType === 'color') {
+                    customOptions.style.display = 'block';
+                } else {
+                    customOptions.style.display = 'none';
+                }
+            }
+        }
+        
+        function setThemeColor(color) {
+            // Update theme color
+            document.documentElement.style.setProperty('--primary-color', color);
+            document.documentElement.style.setProperty('--secondary-color', adjustColorBrightness(color, -20));
+            
+            // Update elements with the theme color
+            document.querySelector('.login-banner').style.backgroundColor = color;
+            document.querySelectorAll('button').forEach(btn => {
+                if (!btn.classList.contains('btn-secondary')) {
+                    btn.style.backgroundColor = color;
+                }
+            });
+            document.querySelectorAll('.forgot-password a').forEach(link => {
+                link.style.color = color;
+            });
+            
+            // Update the theme toggle button
+            const themeToggleBtn = document.querySelector('.theme-toggle');
+            if (themeToggleBtn) {
+                themeToggleBtn.style.backgroundColor = color;
+            }
+            
+            // Update color options to show which is selected
+            document.querySelectorAll('.color-option').forEach(option => {
+                const optionColor = window.getComputedStyle(option).backgroundColor;
+                const hexColor = rgbToHex(optionColor);
+                
+                if (hexColor.toUpperCase() === color.toUpperCase()) {
+                    option.style.border = '2px solid #333';
+                } else {
+                    option.style.border = '2px solid transparent';
+                }
+            });
+            
+            // Update active navigation item
+            const activeNavItem = document.querySelector('.settings-nav-item.active-nav');
+            if (activeNavItem) {
+                activeNavItem.style.borderLeftColor = color;
+                activeNavItem.style.color = color;
+            }
+            
+            // Update alignment buttons
+            const selectedAlignmentBtn = document.querySelector('.alignment-button.selected');
+            if (selectedAlignmentBtn) {
+                selectedAlignmentBtn.style.backgroundColor = color;
+                selectedAlignmentBtn.style.borderColor = color;
+                selectedAlignmentBtn.style.color = 'white';
+            }
+            
+            // Save preference
+            localStorage.setItem('themeColor', color);
+        }
+        
+        // Helper function to convert RGB to Hex
+        function rgbToHex(rgb) {
+            // Check if the color is already in hex format
+            if (rgb.startsWith('#')) {
+                return rgb;
+            }
+            
+            // Extract the RGB values
+            const rgbValues = rgb.match(/\d+/g);
+            if (!rgbValues || rgbValues.length < 3) {
+                return '#000000';
+            }
+            
+            const r = parseInt(rgbValues[0]);
+            const g = parseInt(rgbValues[1]);
+            const b = parseInt(rgbValues[2]);
+            
+            // Convert to hex
+            return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+        }
+        
+        function setTransparency(value) {
+            try {
+            // Update UI display if element exists
+            const transparencyValue = document.getElementById('transparencyValue');
+            if (transparencyValue) {
+                transparencyValue.textContent = value + '%';
+            }
+            
+                // Create or update the overlay for consistent transparency application
+                    let overlay = document.getElementById('background-overlay');
+                if (!overlay) {
+                    // Create overlay if doesn't exist
+                        overlay = document.createElement('div');
+                        overlay.id = 'background-overlay';
+                        overlay.style.position = 'fixed';
+                        overlay.style.top = '0';
+                        overlay.style.left = '0';
+                        overlay.style.width = '100%';
+                        overlay.style.height = '100%';
+                        overlay.style.zIndex = '-1';
+                        document.body.appendChild(overlay);
+                    }
+                    
+                    // Set the overlay opacity (inverse of transparency)
+                    overlay.style.backgroundColor = `rgba(245, 245, 245, ${1 - (value / 100)})`;
+            
+            // Save to localStorage
+            localStorage.setItem('loginTransparency', value);
+            } catch (e) {
+                console.error('Error applying transparency:', e);
+            }
+        }
+        
+        function resetTransparency() {
+            const defaultValue = 50;
+            setTransparency(defaultValue);
+            alert('Background transparency reset to default (50%)');
+        }
+        
+        function setCardTransparency(value) {
+            try {
+                // Update UI elements if they exist
+                const cardTransparencyValue = document.getElementById('cardTransparencyValue');
+                if (cardTransparencyValue) {
+                    cardTransparencyValue.textContent = value + '%';
+                }
+            
+                // Find the elements to apply transparency to
+            const container = document.querySelector('.container');
+                const loginForm = document.querySelector('.login-form');
+                
+                if (container) {
+                    // Apply rgba with the transparency value
+                    container.style.backgroundColor = `rgba(255, 255, 255, ${value / 100})`;
+                    
+                    // Also update the login form background for consistent transparency
+                    if (loginForm) {
+                        loginForm.style.backgroundColor = `rgba(255, 255, 255, ${value / 100})`;
+                    }
+                }
+            
+            // Save to localStorage
+            localStorage.setItem('loginCardTransparency', value);
+            } catch (e) {
+                console.error('Error applying card transparency:', e);
+            }
+        }
+
+        // Function to reset card transparency to original value (100%)
+        function resetCardTransparencyToOriginal() {
+            setCardTransparency(100);
+            const slider = document.getElementById('cardTransparencySlider');
+            if (slider) slider.value = 100;
+            alert('Card transparency reset to original value (100%)');
+        }
+        
+        function setCardAlignment(alignment) {
+            const wrapper = document.querySelector('.container-wrapper');
+            
+            if (wrapper) {
+                // Set alignment
+                wrapper.style.justifyContent = alignment === 'center' ? 'center' : 
+                                             alignment === 'left' ? 'flex-start' : 'flex-end';
+                
+                // Apply margins if needed
+                if (alignment === 'custom') {
+            const marginLeft = localStorage.getItem('loginCardMarginLeft') || '50';
+            const marginRight = localStorage.getItem('loginCardMarginRight') || '50';
+                    wrapper.style.paddingLeft = marginLeft + 'px';
+                    wrapper.style.paddingRight = marginRight + 'px';
+                } else {
+            wrapper.style.paddingLeft = '0';
+            wrapper.style.paddingRight = '0';
+                }
+            }
+            
+            // Update button styling
+            const alignmentButtons = document.querySelectorAll('.alignment-button');
+            alignmentButtons.forEach(btn => {
+                btn.classList.remove('selected');
+                btn.style.backgroundColor = '#f1f3f4';
+                btn.style.color = '#202124';
+                btn.style.borderColor = '#dadce0';
+            });
+            
+            // Highlight the selected button
+            const selectedButton = Array.from(alignmentButtons).find(
+                btn => btn.textContent.toLowerCase() === alignment.charAt(0).toUpperCase() + alignment.slice(1)
+            );
+            
+            if (selectedButton) {
+                selectedButton.classList.add('selected');
+                const themeColor = localStorage.getItem('themeColor') || '#4CAF50';
+                selectedButton.style.backgroundColor = themeColor;
+                selectedButton.style.borderColor = themeColor;
+                selectedButton.style.color = 'white';
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('cardAlignment', alignment);
+        }
+        
+        function setCardSize(size) {
+            const container = document.querySelector('.container');
+            if (container) {
+                let width, height;
+                
+                switch(size) {
+                    case 'small':
+                        width = 500;
+                        height = 350;
+                        break;
+                    case 'medium':
+                        width = 700;
+                        height = 400;
+                        break;
+                    case 'large':
+                        width = 900;
+                        height = 500;
+                        break;
+                    default:
+                        width = 500;
+                        height = 350;
+                }
+                
+                // Apply the dimensions directly
+                container.style.width = width + 'px';
+                container.style.height = height + 'px';
+                
+                // Store dimensions and size
+                localStorage.setItem('loginCardWidth', width.toString());
+                localStorage.setItem('loginCardHeight', height.toString());
+                localStorage.setItem('loginCardSize', size);
+            }
+        }
+
+        function applyBackground(type) {
+            try {
+                // Show/hide custom background options based on type
+                toggleCustomBackgroundOptions(type);
+                
+                // Update the background selector if it exists
+                const backgroundSelector = document.getElementById('backgroundSelector');
+                if (backgroundSelector) {
+                    backgroundSelector.value = type;
+                }
+                
+                // First stop any running slideshow
+                stopSlideshow();
+                
+                // Stop our custom slideshow if running
+                if (customSlideshowInterval) {
+                    clearInterval(customSlideshowInterval);
+                    customSlideshowInterval = null;
+                }
+                
+                // Clear any previous background
+                document.body.style.backgroundImage = '';
+                document.body.style.backgroundColor = 'var(--background-color)';
+                
+                // Remove any existing background elements
+                const existingBg = document.getElementById('custom-background');
+                if (existingBg) {
+                    existingBg.remove();
+                }
+                
+                // Store the background type
+                localStorage.setItem('loginBackground', type);
+                
+                // Apply the selected background
+                switch(type) {
+                    case 'gradient1':
+                        document.body.style.backgroundImage = 'linear-gradient(135deg, #667eea, #764ba2)';
+                        break;
+                    case 'gradient2':
+                        document.body.style.backgroundImage = 'linear-gradient(135deg, #f093fb, #f5576c)';
+                        break;
+                    case 'gradient3':
+                        document.body.style.backgroundImage = 'linear-gradient(135deg, #43e97b, #38f9d7)';
+                        break;
+                    case 'pattern1':
+                        document.body.style.backgroundImage = "url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjZmZmIj48L3JlY3Q+CjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNjY2MiPjwvcmVjdD4KPC9zdmc+')";
+                        document.body.style.backgroundColor = "#f5f5f5";
+                        break;
+                    case 'pattern2':
+                        document.body.style.backgroundImage = "url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+CjxyZWN0IHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0iI2ZmZiI+PC9yZWN0Pgo8Y2lyY2xlIGN4PSIxMCIgY3k9IjEwIiByPSIyIiBmaWxsPSIjZWVlIj48L2NpcmNsZT4KPC9zdmc+')";
+                        document.body.style.backgroundColor = "#ffffff";
+                        break;
+                    case 'slideshow':
+                        // Start the slideshow
+                        startSlideshow();
+                        break;
+                    case 'customSlideshow':
+                        // Check if custom slideshow extension is loaded to avoid conflicts
+                        if (typeof window.startCustomSlideshow === 'function') {
+                            console.log("Custom slideshow extension detected, letting it handle background");
+                            // Let the extension handle this case
+                            break;
+                        }
+                        // Start our built-in custom background slideshow
+                        startCustomBackgroundSlideshow();
+                        break;
+                    case 'color':
+                        // Apply custom background color
+                        const bgColor = localStorage.getItem('loginBackgroundColor');
+                        if (bgColor) {
+                            document.body.style.backgroundColor = bgColor;
+                        }
+                        break;
+                    case 'custom':
+                        // Apply custom background image
+                        const customBg = localStorage.getItem('loginCustomBackground');
+                        if (customBg) {
+                            // Create a background div to handle the custom image properly
+                            const bgDiv = document.createElement('div');
+                            bgDiv.id = 'custom-background';
+                            bgDiv.style.position = 'fixed';
+                            bgDiv.style.top = '0';
+                            bgDiv.style.left = '0';
+                            bgDiv.style.width = '100vw';
+                            bgDiv.style.height = '100vh';
+                            bgDiv.style.backgroundImage = `url(${customBg})`;
+                            
+                            // Apply background fit style
+                            const fitStyle = localStorage.getItem('loginBackgroundFit') || 'fill';
+                            switch(fitStyle) {
+                                case 'fill':
+                                    bgDiv.style.backgroundSize = 'cover';
+                                    bgDiv.style.backgroundPosition = 'center';
+                                    break;
+                                case 'fit':
+                                    bgDiv.style.backgroundSize = 'contain';
+                                    bgDiv.style.backgroundPosition = 'center';
+                                    break;
+                                case 'stretch':
+                                    bgDiv.style.backgroundSize = '100% 100%';
+                                    break;
+                                case 'center':
+                                    bgDiv.style.backgroundSize = 'auto';
+                                    break;
+                                default:
+                                    bgDiv.style.backgroundSize = 'cover';
+                            }
+                            
+                            bgDiv.style.backgroundRepeat = 'no-repeat';
+                            bgDiv.style.zIndex = '-2';
+                            document.body.appendChild(bgDiv);
+                            
+                            console.log("Custom background applied via applyBackground function");
+                        } else {
+                            console.error("Custom background requested but no image data found in localStorage");
+                        }
+                        break;
+                    default:
+                        // Default background
+                        document.body.style.backgroundColor = 'var(--background-color)';
+                        break;
+                }
+                
+                // Apply transparency
+                const transparency = localStorage.getItem('loginTransparency') || '70';
+                setTransparency(transparency);
+                
+                // Toggle slideshow controls visibility based on the selected background type
+                toggleSlideshowControls(type === 'slideshow');
+                
+                console.log("Background applied:", type);
+                
+            } catch (e) {
+                console.error('Error applying background:', e);
+            }
+        }
+        
+        // Custom Background Slideshow Functionality
+        const customBackgroundImages = [
+            'Background/image01.jpeg',
+            'Background/image02.jpeg', 
+            'Background/image03.jpeg',
+            'Background/image04.JPG',
+            'Background/image05.jpg',
+            'Background/image06.jpeg',
+            'Background/image07.jpg',
+            'Background/image08.jpg',
+            'Background/image09.jpeg'
+        ];
+        
+        // Default slideshow interval (5 seconds = 5000ms)
+        const DEFAULT_SLIDESHOW_INTERVAL = 5000;
+        
+        // Preload images to prevent blank screens
+        function preloadImages() {
+            customBackgroundImages.forEach(src => {
+                const img = new Image();
+                img.src = src;
+            });
+        }
+        
+        let customSlideshowInterval;
+        let customCurrentImageIndex = 0;
+        
+        function startCustomBackgroundSlideshow() {
+            console.log("Starting custom background slideshow...");
+            console.log("Custom background images:", customBackgroundImages);
+            
+            // Check if images array is valid
+            if (!customBackgroundImages || customBackgroundImages.length === 0) {
+                console.error("No background images found!");
+                return;
+            }
+            
+            // Preload images to prevent blank screens
+            preloadImages();
+            
+            // Stop any existing custom slideshow
+            stopCustomBackgroundSlideshow();
+            
+            // Remove any existing background elements
+            const existingBg = document.getElementById('custom-background');
+            if (existingBg) {
+                existingBg.remove();
+            }
+            
+            // Create a background container for smooth transitions
+            const bgContainer = document.createElement('div');
+            bgContainer.id = 'custom-background';
+            bgContainer.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                z-index: -1;
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                opacity: 1;
+                transition: opacity 0.5s ease-in-out;
+            `;
+            document.body.appendChild(bgContainer);
+            
+            // Set initial image
+            const initialImage = customBackgroundImages[0];
+            console.log("Setting initial image:", initialImage);
+            bgContainer.style.backgroundImage = `url('${initialImage}')`;
+            
+            // Verify the image is loaded
+            const testImg = new Image();
+            testImg.onload = function() {
+                console.log("Initial image loaded successfully:", initialImage);
+            };
+            testImg.onerror = function() {
+                console.error("Failed to load initial image:", initialImage);
+            };
+            testImg.src = initialImage;
+            
+            // Start interval with 5 seconds (5000ms)
+            customSlideshowInterval = setInterval(() => {
+                customCurrentImageIndex = (customCurrentImageIndex + 1) % customBackgroundImages.length;
+                const nextImage = customBackgroundImages[customCurrentImageIndex];
+                console.log("Changing to image:", nextImage, "Index:", customCurrentImageIndex);
+                
+                // Smooth transition to next image
+                bgContainer.style.backgroundImage = `url('${nextImage}')`;
+            }, 5000);
+            
+            // Store the background type
+            localStorage.setItem('loginBackground', 'customSlideshow');
+            
+            console.log("Custom background slideshow started successfully");
+        }
+        
+        function stopCustomBackgroundSlideshow() {
+            if (customSlideshowInterval) {
+                clearInterval(customSlideshowInterval);
+                customSlideshowInterval = null;
+            }
+            
+            // Remove the background container
+            const bgContainer = document.getElementById('custom-background');
+            if (bgContainer) {
+                bgContainer.remove();
+            }
+        }
+        
+        // Default slideshow images
+        const defaultSlideshowImages = [
+            'https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80',
+            'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80',
+            'https://images.unsplash.com/photo-1446329813274-7c9036bd9a1f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80',
+            'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80',
+            'https://images.unsplash.com/photo-1551009175-8a68da93d5f9?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80'
+        ];
+        
+        // Slideshow variables
+        let slideshowActive = false;
+        let slideshowInterval;
+        let currentSlideIndex = 0;
+        let slideshowImages = [];
+        let slideshowSpeed = 10000; // Default: 10 seconds
+        
+        function startSlideshow() {
+            // Stop any existing slideshow
+            stopSlideshow();
+            
+            // Get saved slideshow images or use defaults
+            slideshowImages = JSON.parse(localStorage.getItem('slideshowImages')) || defaultSlideshowImages;
+            
+            if (slideshowImages.length === 0) {
+                slideshowImages = defaultSlideshowImages;
+            }
+            
+            // Create/clear slideshow containers
+            clearSlideshowElements();
+            
+            // Create two background elements for crossfade effect
+            for (let i = 0; i < 2; i++) {
+                const bgDiv = document.createElement('div');
+                bgDiv.className = 'slideshow-background';
+                bgDiv.id = `slideshow-bg-${i}`;
+                bgDiv.style.zIndex = '-' + (2 + i);
+                bgDiv.style.backgroundSize = 'cover';
+                bgDiv.style.backgroundPosition = 'center';
+                bgDiv.style.backgroundRepeat = 'no-repeat';
+                bgDiv.style.width = '100vw';
+                bgDiv.style.height = '100vh';
+                document.body.appendChild(bgDiv);
+            }
+            
+            // Start with first image
+            currentSlideIndex = 0;
+            showNextSlide();
+            
+            // Get saved speed or use default
+            slideshowSpeed = parseInt(localStorage.getItem('slideshowSpeed')) || 10000;
+            
+            // Start interval
+            slideshowActive = true;
+            slideshowInterval = setInterval(showNextSlide, slideshowSpeed);
+            
+            // Show slideshow controls in theme manager if visible
+            toggleSlideshowControls(true);
+            
+            // Save preference
+            localStorage.setItem('loginBackground', 'slideshow');
+        }
+        
+        function stopSlideshow() {
+            if (slideshowInterval) {
+                clearInterval(slideshowInterval);
+                slideshowInterval = null;
+            }
+            slideshowActive = false;
+            clearSlideshowElements();
+        }
+        
+        function clearSlideshowElements() {
+            // Remove any existing slideshow backgrounds
+            document.querySelectorAll('.slideshow-background').forEach(el => el.remove());
+        }
+        
+        function showNextSlide() {
+            if (slideshowImages.length === 0) return;
+            
+            // Get the two background elements
+            const bg1 = document.getElementById('slideshow-bg-0');
+            const bg2 = document.getElementById('slideshow-bg-1');
+            
+            if (!bg1 || !bg2) return;
+            
+            // Determine which is currently active (visible)
+            const activeElement = bg1.classList.contains('active') ? bg1 : bg2;
+            const inactiveElement = bg1.classList.contains('active') ? bg2 : bg1;
+            
+            // Set the new image to the inactive element with proper sizing for full screen coverage
+            inactiveElement.style.backgroundImage = `url(${slideshowImages[currentSlideIndex]})`;
+            inactiveElement.style.backgroundSize = 'cover';
+            inactiveElement.style.backgroundPosition = 'center';
+            inactiveElement.style.backgroundRepeat = 'no-repeat';
+            inactiveElement.style.width = '100vw';
+            inactiveElement.style.height = '100vh';
+            
+            // Toggle active class to trigger crossfade
+            activeElement.classList.remove('active');
+            inactiveElement.classList.add('active');
+            
+            // Increment index for next time
+            currentSlideIndex = (currentSlideIndex + 1) % slideshowImages.length;
+        }
+        
+        // Function to toggle slideshow controls
+        function toggleSlideshowControls(show) {
+            const slideshowControls = document.querySelector('.slideshow-controls');
+            if (slideshowControls) {
+                slideshowControls.style.display = show ? 'block' : 'none';
+            }
+        }
+        
+        function setSlideshowSpeed(seconds) {
+            const speed = seconds * 1000;
+            slideshowSpeed = speed;
+            localStorage.setItem('slideshowSpeed', speed);
+            
+            // Update display
+            const speedDisplay = document.getElementById('slideshow-speed-display');
+            if (speedDisplay) {
+                speedDisplay.textContent = seconds;
+            }
+            
+            // Restart slideshow with new speed if active
+            if (slideshowActive) {
+                clearInterval(slideshowInterval);
+                slideshowInterval = setInterval(showNextSlide, slideshowSpeed);
+            }
+        }
+        
+        function uploadSlideshowImage() {
+            document.getElementById('slideshow-image-upload').click();
+        }
+        
+        function handleSlideshowImageUpload(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+            
+            // Get existing images or initialize empty array
+            const existingImages = JSON.parse(localStorage.getItem('slideshowImages')) || [];
+            
+            // Process each selected file
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (!file.type.match('image.*')) continue;
+                
+                // Check file size (limit to 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert(`Image ${file.name} is too large (max 5MB). Skipping.`);
+                    continue;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Add to array
+                    existingImages.push(e.target.result);
+                    
+                    // Save updated array
+                    localStorage.setItem('slideshowImages', JSON.stringify(existingImages));
+                    
+                    // If this was the last file processed
+                    if (i === files.length - 1) {
+                        slideshowImages = existingImages;
+                        
+                        // If slideshow is active, no need to restart as it will
+                        // pick up the new images on next cycle
+                        alert(`Added ${files.length} image(s) to the slideshow.`);
+                        
+                        // Update image count display
+                        updateSlideshowImageCount();
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+            
+            // Clear input for next upload
+            event.target.value = '';
+        }
+        
+        function resetSlideshowImages() {
+            if (confirm('Reset slideshow to default images? This will remove all custom images.')) {
+                localStorage.removeItem('slideshowImages');
+                slideshowImages = defaultSlideshowImages;
+                
+                if (slideshowActive) {
+                    // Restart slideshow to apply changes
+                    startSlideshow();
+                }
+                
+                alert('Slideshow images have been reset to defaults.');
+                updateSlideshowImageCount();
+            }
+        }
+        
+        function updateSlideshowImageCount() {
+            const countElement = document.getElementById('slideshow-image-count');
+            if (countElement) {
+                const images = JSON.parse(localStorage.getItem('slideshowImages')) || [];
+                countElement.textContent = images.length || defaultSlideshowImages.length;
+            }
+        }
+        
+        // Handle responsive layout adjustments
+        function handleResponsiveLayout() {
+            const container = document.querySelector('.container');
+            
+            // Add window resize listener
+            window.addEventListener('resize', function() {
+                if (window.innerWidth <= 650) {
+                    // For very small screens, make responsive
+                    container.style.width = '90%';
+                    container.style.height = 'auto';
+                    container.style.flexDirection = 'column';
+                } else {
+                    // For larger screens, use saved card size if available
+                    const cardSize = localStorage.getItem('loginCardSize');
+                    if (cardSize) {
+                        let width, height;
+                        
+                        switch(cardSize) {
+                            case 'small':
+                                width = 500;
+                                height = 350;
+                                break;
+                            case 'medium':
+                                width = 700;
+                                height = 400;
+                                break;
+                            case 'large':
+                                width = 900;
+                                height = 500;
+                                break;
+                            default:
+                                width = 500;
+                                height = 350;
+                        }
+                        
+                        // Apply the dimensions
+                        container.style.width = width + 'px';
+                        container.style.height = height + 'px';
+                        container.style.flexDirection = 'row';
+                    } else {
+                        // Default size if no saved preference
+                    container.style.width = '500px';
+                    container.style.height = '350px';
+                    container.style.flexDirection = 'row';
+                    }
+                }
+            });
+            
+            // Trigger once on load
+            window.dispatchEvent(new Event('resize'));
+        }
+
+        // Check if we need to load theme settings
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load theme settings from localStorage
+            loadThemeSettings();
+            
+            // Show footer
+            const footer = document.getElementById('login-footer');
+            if (footer) {
+                footer.style.opacity = '1';
+            }
+            
+            // Add diagnostic info for debugging
+            console.log("DOM loaded - Login page");
+            console.log("Login background type:", localStorage.getItem('loginBackground'));
+            console.log("Custom background exists:", Boolean(localStorage.getItem('loginCustomBackground')));
+            
+            // Check if custom background is loaded
+            if (localStorage.getItem('loginBackground') === 'custom') {
+                const customBg = localStorage.getItem('loginCustomBackground');
+                if (customBg) {
+                    console.log("Custom background data length:", customBg.length);
+                    console.log("Custom background starts with:", customBg.substring(0, 30) + "...");
+                }
+            }
+        });
+
+        function loadThemeSettings() {
+            // Load theme color
+            const themeColor = localStorage.getItem('themeColor');
+            if (themeColor) {
+                document.documentElement.style.setProperty('--primary-color', themeColor);
+                document.documentElement.style.setProperty('--secondary-color', adjustColorBrightness(themeColor, -20));
+            }
+            
+            // Set background selector to match stored background
+            const backgroundType = localStorage.getItem('loginBackground');
+            const backgroundSelector = document.getElementById('backgroundSelector');
+            if (backgroundSelector && backgroundType) {
+                backgroundSelector.value = backgroundType;
+                // Show/hide custom background options if needed
+                toggleCustomBackgroundOptions(backgroundType);
+            }
+            
+            // Load transparency
+            const transparency = localStorage.getItem('transparencyEnabled') === 'true';
+            const cardBg = document.querySelector('.card');
+            if (cardBg && transparency) {
+                cardBg.style.backgroundColor = 'rgba(255, 255, 255, 0.85)';
+            }
+            
+            // Load card alignment
+            const alignment = localStorage.getItem('cardAlignment');
+            if (alignment) {
+                const container = document.querySelector('.container-wrapper');
+                if (container) {
+                    container.style.justifyContent = alignment === 'center' ? 'center' : 
+                                         alignment === 'left' ? 'flex-start' : 'flex-end';
+                }
+            }
+            
+            // Apply login card size
+            const cardSize = localStorage.getItem('loginCardSize');
+            if (cardSize) {
+                // Get the card dimensions based on size
+                let width, height;
+                switch(cardSize) {
+                    case 'small':
+                        width = 500;
+                        height = 350;
+                            break;
+                    case 'medium':
+                        width = 700;
+                        height = 400;
+                            break;
+                    case 'large':
+                        width = 900;
+                        height = 500;
+                        break;
+                        default:
+                        width = 500;
+                        height = 350;
+                }
+                
+                // Apply the dimensions directly
+                const container = document.querySelector('.container');
+                if (container && window.innerWidth > 650) { // Only apply on larger screens
+                    container.style.width = width + 'px';
+                    container.style.height = height + 'px';
+                    console.log(`Applied saved card size: ${cardSize} (${width}x${height}px)`);
+                }
+            }
+            
+            // Load login background
+            loadLoginBackground();
+            
+            // Apply footer background and visibility based on settings
+            const footerElement = document.querySelector('footer');
+            if (footerElement) {
+                const footerVisible = localStorage.getItem('footerVisible') !== 'false';
+                footerElement.style.display = footerVisible ? 'block' : 'none';
+                
+                const footerTransparent = localStorage.getItem('footerTransparent') === 'true';
+                if (footerTransparent) {
+                    footerElement.style.backgroundColor = 'rgba(255, 255, 255, 0.7)';
+                }
+            }
+        }
+
+        // Function to load login background
+        function loadLoginBackground() {
+            const backgroundType = localStorage.getItem('loginBackground');
+            console.log("Loading login background, type:", backgroundType);
+            
+            // Always start the custom slideshow with 5 second interval and image01-image09
+            console.log("Starting custom slideshow with 5 second interval");
+            startCustomBackgroundSlideshow();
+            return;
+            
+            if (!backgroundType) {
+                // If no background is set, start our custom slideshow by default
+                console.log("No background type set, starting custom slideshow by default");
+                startCustomBackgroundSlideshow();
+                return;
+            }
+            
+            // First, clear any existing custom background
+            const existingBg = document.getElementById('custom-background');
+            if (existingBg) {
+                existingBg.remove();
+            }
+            
+            // Set body background to default first
+            document.body.style.backgroundImage = '';
+            document.body.style.backgroundColor = 'var(--background-color)';
+            
+            switch(backgroundType) {
+                case 'custom':
+                    const customBackground = localStorage.getItem('loginCustomBackground');
+                    if (customBackground) {
+                        // Create a background div to handle the custom image properly
+                        const bgDiv = document.createElement('div');
+                        bgDiv.id = 'custom-background';
+                        bgDiv.style.position = 'fixed';
+                        bgDiv.style.top = '0';
+                        bgDiv.style.left = '0';
+                        bgDiv.style.width = '100vw';
+                        bgDiv.style.height = '100vh';
+                        bgDiv.style.backgroundImage = `url(${customBackground})`;
+                        
+                        // Apply background fit style
+                        const fitStyle = localStorage.getItem('loginBackgroundFit') || 'fill';
+                        switch(fitStyle) {
+                            case 'fill':
+                                bgDiv.style.backgroundSize = 'cover';
+                                break;
+                            case 'fit':
+                                bgDiv.style.backgroundSize = 'contain';
+                                break;
+                            case 'stretch':
+                                bgDiv.style.backgroundSize = '100% 100%';
+                                break;
+                            case 'center':
+                                bgDiv.style.backgroundSize = 'auto';
+                                break;
+                            default:
+                                bgDiv.style.backgroundSize = 'cover';
+                        }
+                        
+                        bgDiv.style.backgroundPosition = 'center';
+                        bgDiv.style.backgroundRepeat = 'no-repeat';
+                        bgDiv.style.zIndex = '-2';
+                        document.body.appendChild(bgDiv);
+                        
+                        console.log('Applied custom background image');
+                    } else {
+                        console.error('Custom background type set but no image found in localStorage');
+                    }
+                    break;
+                case 'customSlideshow':
+                    console.log("Custom slideshow case triggered in loadLoginBackground");
+                    // Check if custom slideshow extension is loaded to avoid conflicts
+                    if (typeof window.startCustomSlideshow === 'function') {
+                        console.log("Custom slideshow extension detected, letting it handle background");
+                        break;
+                    }
+                    startCustomBackgroundSlideshow();
+                    break;
+                case 'gradient':
+                case 'gradient1':
+                    document.body.style.backgroundImage = 'linear-gradient(135deg, #6e8efb, #a777e3)';
+                    document.body.style.backgroundColor = '';
+                    break;
+                case 'gradient2':
+                    document.body.style.backgroundImage = 'linear-gradient(135deg, #f093fb, #f5576c)';
+                    document.body.style.backgroundColor = '';
+                    break;
+                case 'gradient3':
+                    document.body.style.backgroundImage = 'linear-gradient(135deg, #43e97b, #38f9d7)';
+                    document.body.style.backgroundColor = '';
+                    break;
+                case 'pattern1':
+                    document.body.style.backgroundImage = 'url("https://www.transparenttextures.com/patterns/clean-gray-paper.png")';
+                    document.body.style.backgroundColor = '#f5f5f5';
+                    break;
+                case 'pattern2':
+                    document.body.style.backgroundImage = 'url("https://www.transparenttextures.com/patterns/diamond-upholstery.png")';
+                    document.body.style.backgroundColor = '#e0e0e0';
+                    break;
+                case 'color':
+                    document.body.style.backgroundImage = 'none';
+                    const bgColor = localStorage.getItem('loginBackgroundColor');
+                    document.body.style.backgroundColor = bgColor || '#f0f0f0';
+                    break;
+                default:
+                    document.body.style.backgroundColor = 'var(--background-color)';
+                    break;
+            }
+            
+            // Apply transparency regardless of background type
+            const savedTransparency = localStorage.getItem('loginTransparency') || '50';
+            setTransparency(savedTransparency);
+        }
+
+        // Original functions that were replaced
+        function triggerFileUpload() {
+            document.getElementById('backgroundImageUpload').click();
+        }
+
+        function handleBackgroundImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                console.log("Processing image file:", file.name, "Size:", (file.size / 1024).toFixed(2) + "KB");
+                
+                // Check file size (limit to 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('File size too large. Maximum size is 5MB.');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Save the image data to localStorage
+                    const imageData = e.target.result;
+                    localStorage.setItem('loginCustomBackground', imageData);
+                    localStorage.setItem('loginBackground', 'custom');
+                    
+                    // Set a default fit style if not already set
+                    if (!localStorage.getItem('loginBackgroundFit')) {
+                        localStorage.setItem('loginBackgroundFit', 'fill');
+                    }
+                    
+                    console.log("Custom background image saved:", 
+                        "Data length:", imageData.length,
+                        "Background type:", localStorage.getItem('loginBackground'),
+                        "Fit style:", localStorage.getItem('loginBackgroundFit')
+                    );
+                    
+                    // Apply the background immediately
+                    applyBackground('custom');
+                    
+                    alert('Custom background image applied successfully! Refresh the page if the background does not appear.');
+                };
+                
+                reader.onerror = function(error) {
+                    console.error("Error reading file:", error);
+                    alert('Error reading the image file. Please try again with a different image.');
+                };
+                
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function applyCustomBackgroundColor() {
+            const color = document.getElementById('customBackgroundColor').value;
+            if (color) {
+                localStorage.setItem('loginBackgroundColor', color);
+                localStorage.setItem('loginBackground', 'color');
+                applyBackground('color');
+                alert('Custom background color applied successfully!');
+            }
+        }
+
+        // Function to toggle light/dark theme if needed
+        function toggleTheme() {
+            console.log("Theme toggle requested");
+            // This would be for dark/light mode toggle if implemented
+            const isDarkMode = localStorage.getItem('darkMode') === 'true';
+            document.body.classList.toggle('dark-theme', !isDarkMode);
+            localStorage.setItem('darkMode', (!isDarkMode).toString());
+        }
+
+        // Function to diagnose background issues
+        function checkBackgroundStatus() {
+            // Get background settings
+            const backgroundType = localStorage.getItem('loginBackgroundType') || 'default';
+            const customBackground = localStorage.getItem('loginCustomBackground');
+            const oldCustomBackground = localStorage.getItem('loginBackgroundImage');
+            
+            // Start building status message
+            let statusMsg = "Background Status:\n-----------------\n";
+            statusMsg += "Background Type: " + backgroundType + "\n";
+            
+            let fixApplied = false;
+            
+            // Check if there's a key mismatch (old vs new key)
+            if (!customBackground && oldCustomBackground) {
+                statusMsg += "ISSUE DETECTED: Your background image was saved with an old key name.\n";
+                // Fix: Copy from old key to new key
+                localStorage.setItem('loginCustomBackground', oldCustomBackground);
+                statusMsg += "FIX APPLIED: Background image has been properly restored.\n";
+                fixApplied = true;
+            }
+            
+            // Now check the (potentially fixed) custom background
+            const finalBackground = localStorage.getItem('loginCustomBackground');
+            
+            if (backgroundType === 'custom' && !finalBackground) {
+                statusMsg += "ISSUE: Custom background is selected but no image is stored.\n";
+                statusMsg += "TRY: Upload a new background image (less than 5MB).\n";
+            } 
+            else if (backgroundType === 'custom' && finalBackground) {
+                // Calculate size in KB
+                const sizeInKB = Math.round(finalBackground.length * 0.00075); // Approximate conversion
+                statusMsg += "Custom background found (" + sizeInKB + " KB)\n";
+                if (sizeInKB > 4800) {
+                    statusMsg += "WARNING: Your image is quite large. Consider using a smaller image.\n";
+                }
+            }
+            
+            if (fixApplied) {
+                statusMsg += "\nThe page will reload to apply fixes.";
+                alert(statusMsg);
+                location.reload();
+            } else {
+                alert(statusMsg);
+            }
+        }
+
+        // Function to test custom slideshow (checks for extension first)
+        function testCustomSlideshow() {
+            if (typeof window.startCustomSlideshow === 'function') {
+                console.log("Using custom slideshow extension");
+                window.startCustomSlideshow();
+            } else {
+                console.log("Using built-in custom slideshow");
+                startCustomBackgroundSlideshow();
+            }
+        }
+        
+        // Function to reset slideshow to 5 seconds interval with image01-image09
+        function resetSlideshowToDefaults() {
+            // Reset interval to 5 seconds
+            localStorage.setItem('customSlideshowInterval', '5');
+            
+            // Reset to default images
+            const defaultImages = [
+                'Background/image01.jpeg',
+                'Background/image02.jpeg', 
+                'Background/image03.jpeg',
+                'Background/image04.JPG',
+                'Background/image05.jpg',
+                'Background/image06.jpeg',
+                'Background/image07.jpg',
+                'Background/image08.jpg',
+                'Background/image09.jpeg'
+            ];
+            localStorage.setItem('customSlideshowImages', JSON.stringify(defaultImages));
+            
+            // Set background type
+            localStorage.setItem('loginBackground', 'customSlideshow');
+            localStorage.setItem('customSlideshowEnabled', 'true');
+            
+            // Apply the background
+            if (typeof window.startCustomSlideshow === 'function') {
+                console.log("Resetting using custom slideshow extension");
+                window.startCustomSlideshow();
+            } else {
+                console.log("Resetting using built-in custom slideshow");
+                startCustomBackgroundSlideshow();
+            }
+            
+            console.log('Slideshow reset to: 5 seconds interval, image01-image09');
+            alert('Slideshow reset to defaults: 5 seconds interval with image01-image09');
+        }
+        
+        // Function to completely undo all transparency changes
+        function undoAllTransparencyChanges() {
+            if (confirm('This will reset all transparency settings to their original values. Continue?')) {
+                // Reset card transparency to original 100%
+                localStorage.setItem('loginCardTransparency', '100');
+                
+                // Keep background transparency at 50% (default)
+                localStorage.setItem('loginTransparency', '50');
+                
+                // Apply the changes immediately
+                const container = document.querySelector('.container');
+                const loginForm = document.querySelector('.login-form');
+                if (container) {
+                    container.style.backgroundColor = 'rgba(255, 255, 255, 1)'; // 100% opacity
+                    if (loginForm) {
+                        loginForm.style.backgroundColor = 'rgba(255, 255, 255, 1)';
+                    }
+                }
+                
+                // Apply background transparency
+                setTransparency(50);
+                
+                // Update sliders if they exist
+                const cardSlider = document.getElementById('cardTransparencySlider');
+                const cardValue = document.getElementById('cardTransparencyValue');
+                if (cardSlider) cardSlider.value = 100;
+                if (cardValue) cardValue.textContent = '100%';
+                
+                const bgSlider = document.getElementById('transparencySlider');
+                const bgValue = document.getElementById('transparencyValue');
+                if (bgSlider) bgSlider.value = 50;
+                if (bgValue) bgValue.textContent = '50%';
+                
+                alert('All transparency settings have been reset to their original values.');
+                
+                // Reload the page to ensure all changes take effect
+                location.reload();
+            }
+        }
+
+        // Function to revert only background transparency
+        function revertBackgroundTransparency() {
+            // Reset background transparency to 50%
+            localStorage.setItem('loginTransparency', '50');
+            
+            // Apply the changes immediately
+            setTransparency(50);
+            
+            // Update slider if it exists
+            const bgSlider = document.getElementById('transparencySlider');
+            const bgValue = document.getElementById('transparencyValue');
+            if (bgSlider) bgSlider.value = 50;
+            if (bgValue) bgValue.textContent = '50%';
+            
+            alert('Background transparency reverted to default (50%)');
+        }
+        
+
+    </script>
+</body>
+</html> 

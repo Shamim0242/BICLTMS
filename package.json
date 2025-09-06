@@ -1,26 +1,17 @@
 {
-  "name": "fleetmanagement",
+  "name": "transport-management",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "A transport management system for vehicle tracking",
+  "main": "index.html",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "start": "live-server"
   },
-  "keywords": [],
   "author": "",
-  "license": "ISC",
-  "type": "commonjs",
+  "license": "MIT",
   "dependencies": {
-    "bcryptjs": "^3.0.2",
-    "cookie-parser": "^1.4.7",
-    "csv-parser": "^3.0.0",
-    "ejs": "^3.1.10",
-    "express": "^5.1.0",
-    "express-ejs-layouts": "^2.5.1",
-    "express-session": "^1.18.1",
-    "jsonwebtoken": "^9.0.2",
-    "multer": "^1.4.5-lts.1",
-    "nodemailer": "^6.10.1"
+    "papaparse": "^5.4.1"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.2"
   }
-}
+} 

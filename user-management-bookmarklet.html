@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle User Management Bookmarklet</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #4CAF50;
+            text-align: center;
+        }
+        .bookmarklet {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .instructions {
+            background-color: #f9f9f9;
+            border-left: 5px solid #4CAF50;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        code {
+            display: block;
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Vehicle User Management Bookmarklet</h1>
+    
+    <div class="instructions">
+        <p><strong>Instructions:</strong> Drag the button below to your bookmarks bar. Then, when you're on the vehicles.html page, click the bookmark to add the User Management functionality.</p>
+    </div>
+    
+    <p>Drag this to your bookmarks bar: <a href="javascript:(function(){
+        // User Management Functions
+        window.showUserManagement = function() {
+            refreshUserList();
+            document.getElementById('userManagementModal').style.display = 'block';
+        };
+    
+        window.closeUserManagement = function() {
+            document.getElementById('userManagementModal').style.display = 'none';
+            document.getElementById('new-username').value = '';
+            document.getElementById('new-password').value = '';
+            document.getElementById('is-admin').checked = false;
+        };
+    
+        window.refreshUserList = function() {
+            const userList = document.getElementById('user-list');
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            
+            userList.innerHTML = `
+                <table style='width:100%; border-collapse: collapse;'>
+                    <tr style='background-color: #f2f2f2;'>
+                        <th style='text-align: left; padding: 8px;'>Username</th>
+                        <th style='text-align: left; padding: 8px;'>Admin</th>
+                        <th style='text-align: left; padding: 8px;'>Actions</th>
+                    </tr>
+                    ${users.map(user => `
+                        <tr>
+                            <td style='padding: 8px;'>${user.username}</td>
+                            <td style='padding: 8px;'>${user.isAdmin ? 'Yes' : 'No'}</td>
+                            <td style='padding: 8px;'>
+                                <button onclick='resetUserPassword(\"${user.username}\")' style='margin-right: 5px;'>Reset Password</button>
+                                ${user.username !== 'admin' ? `<button onclick='deleteUser(\"${user.username}\")'>Delete</button>` : ''}
+                            </td>
+                        </tr>
+                    `).join('')}
+                </table>
+            `;
+        };
+    
+        window.addUser = function() {
+            const username = document.getElementById('new-username').value;
+            const password = document.getElementById('new-password').value;
+            const isAdmin = document.getElementById('is-admin').checked;
+            
+            if (!username || !password) {
+                alert('Username and password are required!');
+                return;
+            }
+            
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            
+            if (users.some(u => u.username === username)) {
+                alert('Username already exists!');
+                return;
+            }
+            
+            users.push({
+                username: username,
+                password: password,
+                isAdmin: isAdmin,
+                email: `${username}@example.com` // Default email
+            });
+            
+            localStorage.setItem('users', JSON.stringify(users));
+            refreshUserList();
+            
+            // Clear form
+            document.getElementById('new-username').value = '';
+            document.getElementById('new-password').value = '';
+            document.getElementById('is-admin').checked = false;
+        };
+    
+        window.resetUserPassword = function(username) {
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            const userIndex = users.findIndex(u => u.username === username);
+            
+            if (userIndex !== -1) {
+                users[userIndex].password = '1234';
+                localStorage.setItem('users', JSON.stringify(users));
+                alert(`Password for ${username} has been reset to '1234'`);
+            }
+        };
+    
+        window.deleteUser = function(username) {
+            if (confirm(`Are you sure you want to delete user '${username}'?`)) {
+                const users = JSON.parse(localStorage.getItem('users')) || [];
+                const filteredUsers = users.filter(u => u.username !== username);
+                localStorage.setItem('users', JSON.stringify(filteredUsers));
+                refreshUserList();
+            }
+        };
+    
+        window.changePassword = function() {
+            const currentPassword = document.getElementById('current-password').value;
+            const newPassword = document.getElementById('new-user-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            const messageDiv = document.getElementById('password-message');
+            
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                messageDiv.textContent = 'All fields are required!';
+                messageDiv.style.color = 'red';
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                messageDiv.textContent = 'New password and confirm password do not match!';
+                messageDiv.style.color = 'red';
+                return;
+            }
+            
+            // Get current user
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) {
+                messageDiv.textContent = 'You are not logged in!';
+                messageDiv.style.color = 'red';
+                return;
+            }
+            
+            // Get all users to update the password
+            const users = JSON.parse(localStorage.getItem('users'));
+            const userIndex = users.findIndex(u => u.username === currentUser.username);
+            
+            if (userIndex === -1) {
+                messageDiv.textContent = 'User not found!';
+                messageDiv.style.color = 'red';
+                return;
+            }
+            
+            if (users[userIndex].password !== currentPassword) {
+                messageDiv.textContent = 'Current password is incorrect!';
+                messageDiv.style.color = 'red';
+                return;
+            }
+            
+            // Update password
+            users[userIndex].password = newPassword;
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            // Also update current user
+            currentUser.password = newPassword;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            
+            messageDiv.textContent = 'Password changed successfully!';
+            messageDiv.style.color = 'green';
+            
+            // Clear fields
+            document.getElementById('current-password').value = '';
+            document.getElementById('new-user-password').value = '';
+            document.getElementById('confirm-password').value = '';
+            
+            // Close modal after a delay
+            setTimeout(function() {
+                closeChangePassword();
+            }, 2000);
+        };
+    
+        window.closeChangePassword = function() {
+            document.getElementById('changePasswordModal').style.display = 'none';
+            document.getElementById('current-password').value = '';
+            document.getElementById('new-user-password').value = '';
+            document.getElementById('confirm-password').value = '';
+            document.getElementById('password-message').textContent = '';
+        };
+        
+        // Create and add user management link to nav
+        const userActions = document.querySelector('.user-actions');
+        if (userActions) {
+            // Create user management link
+            const userManagementLink = document.createElement('a');
+            userManagementLink.href = '#';
+            userManagementLink.textContent = 'User Management';
+            userManagementLink.onclick = function(e) {
+                e.preventDefault();
+                showUserManagement();
+            };
+            
+            // Insert after the welcome span and before Theme link
+            const welcomeSpan = userActions.querySelector('span');
+            if (welcomeSpan) {
+                userActions.insertBefore(userManagementLink, welcomeSpan.nextSibling);
+                // Add a space after the link for better formatting
+                userActions.insertBefore(document.createTextNode(' '), userManagementLink.nextSibling);
+            }
+        }
+        
+        alert('User Management functionality has been activated!');
+    })()" class="bookmarklet">Add User Management</a></p>
+    
+    <div class="instructions">
+        <p><strong>How it works:</strong> This bookmarklet adds User Management functions to the vehicles page without modifying the original files. When you click the bookmarklet on the vehicles page, it adds a "User Management" link to the navigation and implements all the necessary functions.</p>
+    </div>
+    
+    <h2>Alternative Method: Script Tag</h2>
+    <p>If you prefer, you can also create a new JavaScript file and include it at the end of the vehicle.html page. Create a file named "user-management.js" with this content:</p>
+    
+    <code>
+// user-management.js - Add user management functionality to vehicles page without modifying original code
+(function() {
+    // Create user management link in navigation
+    document.addEventListener('DOMContentLoaded', function() {
+        // Find the user actions div
+        const userActions = document.querySelector('.user-actions');
+        if (userActions) {
+            // Create user management link
+            const userManagementLink = document.createElement('a');
+            userManagementLink.href = '#';
+            userManagementLink.textContent = 'User Management';
+            userManagementLink.onclick = showUserManagement;
+            
+            // Insert after the welcome span and before Theme link
+            const welcomeSpan = userActions.querySelector('span');
+            if (welcomeSpan) {
+                userActions.insertBefore(userManagementLink, welcomeSpan.nextSibling);
+                // Add a space after the link for better formatting
+                userActions.insertBefore(document.createTextNode(' '), userManagementLink.nextSibling);
+            }
+        }
+    });
+
+    // User Management Functions
+    window.showUserManagement = function() {
+        refreshUserList();
+        document.getElementById('userManagementModal').style.display = 'block';
+    };
+
+    window.closeUserManagement = function() {
+        document.getElementById('userManagementModal').style.display = 'none';
+        document.getElementById('new-username').value = '';
+        document.getElementById('new-password').value = '';
+        document.getElementById('is-admin').checked = false;
+    };
+
+    window.refreshUserList = function() {
+        const userList = document.getElementById('user-list');
+        const users = JSON.parse(localStorage.getItem('users')) || [];
+        
+        userList.innerHTML = `
+            &lt;table style="width:100%; border-collapse: collapse;"&gt;
+                &lt;tr style="background-color: #f2f2f2;"&gt;
+                    &lt;th style="text-align: left; padding: 8px;"&gt;Username&lt;/th&gt;
+                    &lt;th style="text-align: left; padding: 8px;"&gt;Admin&lt;/th&gt;
+                    &lt;th style="text-align: left; padding: 8px;"&gt;Actions&lt;/th&gt;
+                &lt;/tr&gt;
+                ${users.map(user => `
+                    &lt;tr&gt;
+                        &lt;td style="padding: 8px;"&gt;${user.username}&lt;/td&gt;
+                        &lt;td style="padding: 8px;"&gt;${user.isAdmin ? 'Yes' : 'No'}&lt;/td&gt;
+                        &lt;td style="padding: 8px;"&gt;
+                            &lt;button onclick="resetUserPassword('${user.username}')" style="margin-right: 5px;"&gt;Reset Password&lt;/button&gt;
+                            ${user.username !== 'admin' ? `&lt;button onclick="deleteUser('${user.username}')"&gt;Delete&lt;/button&gt;` : ''}
+                        &lt;/td&gt;
+                    &lt;/tr&gt;
+                `).join('')}
+            &lt;/table&gt;
+        `;
+    };
+
+    // Add the rest of the functions...
+})();
+    </code>
+    
+    <p>Then add a script tag for this file in your HTML file right before the closing body tag:</p>
+    <code>&lt;script src="user-management.js"&gt;&lt;/script&gt;</code>
+    
+    <p>Both methods accomplish the same goal: adding user management functionality without modifying the original app code.</p>
+</body>
+</html> 
